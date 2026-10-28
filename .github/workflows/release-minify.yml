@@ -33,5 +33,5 @@ jobs:
       - name: Upload release asset
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release upload "$TAG" dist/quickevent.min.js --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/quickevent.min.js --clobber
+
