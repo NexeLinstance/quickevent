@@ -1,0 +1,13 @@
+{
+  "name": "quickevent",
+  "version": "1.0.0",
+  "description": "Tiny standalone browser event emitter library",
+  "main": "src/quickevent.js",
+  "scripts": {
+    "build": "terser src/quickevent.js -c -m -o dist/quickevent.min.js"
+  },
+  "devDependencies": {
+    "terser": "^5.31.0"
+  },
+  "license": "MIT"
+}

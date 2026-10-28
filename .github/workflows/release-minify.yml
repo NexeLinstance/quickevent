@@ -1,0 +1,37 @@
+name: Release Minify
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  minify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Create dist
+        run: mkdir -p dist
+
+      - name: Minify with Terser
+        run: npx --yes terser@5 src/quickevent.js -c -m -o dist/quickevent.min.js
+
+      - name: Verify minified output
+        run: test -s dist/quickevent.min.js
+
+      - name: Upload release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" dist/quickevent.min.js --clobber
