@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Class commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 120px; }
+
+    /* Classes we will toggle */
+    .red   { color: red; }
+    .bold  { font-weight: bold; }
+    .pad   { padding: 8px 16px; background: #ffe; }
+    .border{ border: 2px solid #333; }
+    .shadow{ box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+  </style>
+</head>
+<body>
+  <h1>Class commands</h1>
+
+  <!-- ── addClass ────────────────────────────────────────── -->
+  <section>
+    <h2>addClass</h2>
+    <p class="desc">Add a single class. Safe to call twice.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="c1-target">text</span></div>
+    <button click='["addClass", "#c1-target", "red"]'>add red</button>
+    <button click='["addClass", "#c1-target", "bold"]'>add bold</button>
+    <button click='["addClass", "#c1-target", "pad"]'>add pad</button>
+    <button click='["setClass", "#c1-target", "target"]'>reset classes</button>
+    <button click='["addClass", "#c1-target", "red", 800]'>add red delayed 800ms</button>
+  </section>
+
+  <!-- ── removeClass ─────────────────────────────────────── -->
+  <section>
+    <h2>removeClass</h2>
+    <p class="desc">Remove a class.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target red bold pad" id="c2-target">text</span></div>
+    <button click='["removeClass", "#c2-target", "red"]'>remove red</button>
+    <button click='["removeClass", "#c2-target", "bold"]'>remove bold</button>
+    <button click='["removeClass", "#c2-target", "pad"]'>remove pad</button>
+    <button click='["removeClass", "#c2-target", "missing"]'>remove non-existent</button>
+    <button click='["setClass", "#c2-target", "target red bold pad"]'>reset classes</button>
+  </section>
+
+  <!-- ── toggleClass ─────────────────────────────────────── -->
+  <section>
+    <h2>toggleClass</h2>
+    <p class="desc">Toggle a class on/off.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="c3-target">text</span></div>
+    <button click='["toggleClass", "#c3-target", "red"]'>toggle red</button>
+    <button click='["toggleClass", "#c3-target", "bold"]'>toggle bold</button>
+    <button click='["toggleClass", "#c3-target", "border"]'>toggle border</button>
+    <button click='["toggleClass", "#c3-target", "shadow"]'>toggle shadow</button>
+  </section>
+
+  <!-- ── setClass ────────────────────────────────────────── -->
+  <section>
+    <h2>setClass</h2>
+    <p class="desc">Replace all classes with the given one.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="c4-target">text</span></div>
+    <button click='["setClass", "#c4-target", "target red"]'>→ target red</button>
+    <button click='["setClass", "#c4-target", "target bold pad"]'>→ target bold pad</button>
+    <button click='["setClass", "#c4-target", "target border shadow"]'>→ target border shadow</button>
+    <button click='["setClass", "#c4-target", "target"]'>reset</button>
+  </section>
+
+  <!-- ── Multiple elements ───────────────────────────────── -->
+  <section>
+    <h2>Multiple elements</h2>
+    <p class="desc">The same command applies to every matching element.</p>
+    <div class="row"><span class="label">Targets:</span>
+      <span class="target" id="m1">m1</span>
+      <span class="target" id="m2">m2</span>
+      <span class="target" id="m3">m3</span>
+    </div>
+    <button click='["addClass", "span.target", "bold"]'>add bold to all</button>
+    <button click='["removeClass", "span.target", "bold"]'>remove bold from all</button>
+    <button click='["toggleClass", "span.target", "red"]'>toggle red on all</button>
+    <button click='["setClass", "span.target", "target"]'>reset all</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="c5-target">still works</span></div>
+    <button click='["addClass"]'>only command name</button>
+    <button click='["addClass", "#c5-target"]'>missing class name</button>
+    <button click='["addClas", "#c5-target", "red"]'>typo command name</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

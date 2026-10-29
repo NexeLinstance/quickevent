@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Text commands</title>
+</head>
+<body>
+  <h1>QuickEvent · Text</h1>
+
+  <p id="output">Initial text</p>
+  <p id="copy">Source text here</p>
+  <p id="copy2">Another source</p>
+
+  <button click='["setText", "#output", "New text"]'>
+    setText
+  </button>
+
+  <button click='["appendText", "#output", " [appended]"]'>
+    appendText
+  </button>
+
+  <button click='["prependText", "#output", "[prepended] "]'>
+    prependText
+  </button>
+
+  <button click='["setText", "#output", ["getText", "#copy","m_txt","this is {m_txt}"]]'>
+    getText → setText
+  </button>
+
+  <button click='[
+    ["getText", "#copy", "my_text"],
+    ["setText", "#output", "Got: {my_text}"]
+  ]'>
+    getText with alias
+  </button>
+
+  <button click='[
+    ["getText", "#copy", "my_text"],
+    ["setText", "#output", "{ upperCase(my_text) }"]
+  ]'>
+    getText + upperCase
+  </button>
+
+  <button click='[
+    ["setText", "#output", "delayed...", 1000]
+  ]'>
+    setText with delay
+  </button>
+
+  <button click='["setText", "p", "all p elements changed"]'>
+    setText on all p
+  </button>
+
+  <script type="module" src="/dev/text-test.js"></script>
+</body>
+</html>

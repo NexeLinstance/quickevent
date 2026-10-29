@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Style commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .target { background: #fffbe6; padding: 8px 16px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 140px; }
+  </style>
+</head>
+<body>
+  <h1>Style commands</h1>
+
+  <!-- ── addStyle ────────────────────────────────────────── -->
+  <section>
+    <h2>addStyle</h2>
+    <p class="desc">Add individual inline styles. Existing styles are preserved.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s1-target">text</span></div>
+    <button click='["addStyle", "#s1-target", "color:red"]'>color: red</button>
+    <button click='["addStyle", "#s1-target", "font-weight:bold"]'>font-weight: bold</button>
+    <button click='["addStyle", "#s1-target", "background:#ffe;margin:8px"]'>two props</button>
+    <button click='["addStyle", "#s1-target", "border:2px solid #333"]'>border</button>
+    <button click='["addStyle", "#s1-target", "color:blue", 800]'>color: blue (delayed)</button>
+    <button click='["setStyle", "#s1-target", ""]'>reset</button>
+  </section>
+
+  <!-- ── removeStyle ─────────────────────────────────────── -->
+  <section>
+    <h2>removeStyle</h2>
+    <p class="desc">Remove one inline property.</p>
+    <div class="row"><span class="label">Target:</span>
+      <span class="target" id="s2-target" style="color:red;font-weight:bold;background:#ffe">text</span>
+    </div>
+    <button click='["removeStyle", "#s2-target", "color"]'>remove color</button>
+    <button click='["removeStyle", "#s2-target", "font-weight"]'>remove font-weight</button>
+    <button click='["removeStyle", "#s2-target", "background"]'>remove background</button>
+    <button click='["removeStyle", "#s2-target", "not-a-prop"]'>remove non-existent</button>
+    <button click='["setStyle", "#s2-target", "color:red;font-weight:bold;background:#ffe"]'>reset</button>
+  </section>
+
+  <!-- ── toggleStyle ─────────────────────────────────────── -->
+  <section>
+    <h2>toggleStyle</h2>
+    <p class="desc">Pass <code>prop:value</code> to toggle between empty and that value.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s3-target">text</span></div>
+    <button click='["toggleStyle", "#s3-target", "color:red"]'>toggle color: red</button>
+    <button click='["toggleStyle", "#s3-target", "font-weight:bold"]'>toggle font-weight: bold</button>
+    <button click='["toggleStyle", "#s3-target", "background:#ffe"]'>toggle background</button>
+    <button click='["setStyle", "#s3-target", ""]'>reset</button>
+  </section>
+
+  <!-- ── setStyle ────────────────────────────────────────── -->
+  <section>
+    <h2>setStyle</h2>
+    <p class="desc">Replace all inline styles with the given set.</p>
+    <div class="row"><span class="label">Target:</span>
+      <span class="target" id="s4-target" style="color:red;background:#ffe">text</span>
+    </div>
+    <button click='["setStyle", "#s4-target", "color:blue"]'>→ color:blue</button>
+    <button click='["setStyle", "#s4-target", "background:#eef;padding:16px"]'>→ bg + padding</button>
+    <button click='["setStyle", "#s4-target", "border:2px solid #000;border-radius:8px"]'>→ border + radius</button>
+    <button click='["setStyle", "#s4-target", ""]'>reset</button>
+  </section>
+
+  <!-- ── Combined with variables ─────────────────────────── -->
+  <section>
+    <h2>Combined with variables</h2>
+    <p class="desc">Use templates to build styles from values.</p>
+    <div class="row"><span class="label">Input:</span> <input id="s5-size" type="text" value="24"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s5-target">text</span></div>
+    <button click='[
+      ["getValue", "#s5-size", "n"],
+      ["addStyle", "#s5-target", "font-size:{ n * 1 }px"]
+    ]'>font-size from input</button>
+    <button click='[
+      ["getValue", "#s5-size", "n"],
+      ["addStyle", "#s5-target", "font-size:{ n * 1 * 2 }px"]
+    ]'>font-size × 2</button>
+    <button click='["setStyle", "#s5-target", ""]'>reset</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s6-target">still works</span></div>
+    <button click='["addStyle"]'>only command name</button>
+    <button click='["addStyle", "#s6-target"]'>missing style</button>
+    <button click='["addStyl", "#s6-target", "color:red"]'>typo command name</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

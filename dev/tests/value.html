@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Value commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    input, textarea, select { margin: 4px 0; padding: 4px 8px; width: 100%; max-width: 320px; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 80px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Value commands</h1>
+
+  <!-- ── setValue on input ───────────────────────────────── -->
+  <section>
+    <h2>setValue · input</h2>
+    <p class="desc">Set the <code>.value</code> property of an input.</p>
+    <div class="row"><span class="label">Target:</span> <input id="v1-target" type="text" value="initial"></div>
+    <button click='["setValue", "#v1-target", "set by setValue"]'>basic</button>
+    <button click='["setValue", "#v1-target", ""]'>clear</button>
+    <button click='["setValue", "#v1-target", "delayed", 800]'>delayed 800ms</button>
+    <button click='["setValue", "#v1-target", "multi"]'>another value</button>
+  </section>
+
+  <!-- ── setValue on textarea ────────────────────────────── -->
+  <section>
+    <h2>setValue · textarea</h2>
+    <div class="row"><span class="label">Target:</span> <textarea id="v2-target" rows="3">initial textarea</textarea></div>
+    <button click='["setValue", "#v2-target", "line one\nline two"]'>two lines</button>
+    <button click='["setValue", "#v2-target", ""]'>clear</button>
+  </section>
+
+  <!-- ── setValue on select ──────────────────────────────── -->
+  <section>
+    <h2>setValue · select</h2>
+    <div class="row"><span class="label">Target:</span>
+      <select id="v3-target">
+        <option value="a">A</option>
+        <option value="b" selected>B</option>
+        <option value="c">C</option>
+      </select>
+    </div>
+    <button click='["setValue", "#v3-target", "a"]'>select a</button>
+    <button click='["setValue", "#v3-target", "c"]'>select c</button>
+  </section>
+
+  <!-- ── getValue: basics ────────────────────────────────── -->
+  <section>
+    <h2>getValue · basics</h2>
+    <p class="desc">Read <code>.value</code> and write into the output.</p>
+    <div class="row"><span class="label">Source:</span> <input id="v4-src" type="text" value="Hello from input"></div>
+    <div class="row"><span class="label">Result:</span> <input id="v4-out" type="text" value=""></div>
+    <button click='["setValue", "#v4-out", ["getValue", "#v4-src"]]'>copy src → out</button>
+    <button click='[
+      ["getValue", "#v4-src", "v"],
+      ["setValue", "#v4-out", "got: { v }"]
+    ]'>alias + template</button>
+  </section>
+
+  <!-- ── getValue: string methods ────────────────────────── -->
+  <section>
+    <h2>getValue · string methods</h2>
+    <div class="row"><span class="label">Source:</span> <input id="v5-src" type="text" value="Hello World"></div>
+    <div class="row"><span class="label">Result:</span> <input id="v5-out" type="text" value=""></div>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "{ upperCase(v) }"]
+    ]'>upperCase</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "{ lowerCase(v) }"]
+    ]'>lowerCase</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "{ trim(v) }"]
+    ]'>trim</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "{ slice(v, 0, 5) }"]
+    ]'>slice(0,5)</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "length = { length(v) }"]
+    ]'>length</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "startsWith Hello = { startsWith(v, \"Hello\") }"]
+    ]'>startsWith</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "endsWith World = { endsWith(v, \"World\") }"]
+    ]'>endsWith</button>
+    <button click='[
+      ["getValue", "#v5-src", "v"],
+      ["setValue", "#v5-out", "indexOf o = { indexOf(v, \"o\") }"]
+    ]'>indexOf</button>
+  </section>
+
+  <!-- ── getValue: numbers ───────────────────────────────── -->
+  <section>
+    <h2>getValue · numbers</h2>
+    <p class="desc">Values are strings; force number with <code>* 1</code>.</p>
+    <div class="row"><span class="label">Source:</span> <input id="v6-src" type="text" value="42"></div>
+    <div class="row"><span class="label">Result:</span> <input id="v6-out" type="text" value=""></div>
+    <button click='[
+      ["getValue", "#v6-src", "n"],
+      ["setValue", "#v6-out", "n * 1 = { n * 1 }"]
+    ]'>n * 1 (numeric)</button>
+    <button click='[
+      ["getValue", "#v6-src", "n"],
+      ["setValue", "#v6-out", "n * 1 + 1 = { n * 1 + 1 }"]
+    ]'>n*1 + 1</button>
+    <button click='[
+      ["getValue", "#v6-src", "n"],
+      ["setValue", "#v6-out", "sqrt = { sqrt(n) }"]
+    ]'>sqrt</button>
+    <button click='[
+      ["getValue", "#v6-src", "n"],
+      ["setValue", "#v6-out", "pow(n, 2) = { pow(n, 2) }"]
+    ]'>pow(n, 2)</button>
+    <button click='[
+      ["getValue", "#v6-src", "n"],
+      ["setValue", "#v6-out", "floor = { floor(n) }"]
+    ]'>floor</button>
+    <button click='[
+      ["getValue", "#v6-src", "n"],
+      ["setValue", "#v6-out", "abs = { abs(n) }"]
+    ]'>abs</button>
+  </section>
+
+  <!-- ── getValue: multiple elements ─────────────────────── -->
+  <section>
+    <h2>getValue · multiple elements</h2>
+    <div class="row"><span class="label">Source:</span>
+      <input class="multi" type="text" value="10">
+      <input class="multi" type="text" value="20">
+      <input class="multi" type="text" value="30">
+    </div>
+    <div class="row"><span class="label">Result:</span> <input id="v7-out" type="text" value=""></div>
+    <button click='[
+      ["setValue", "#v7-out", ["getValue", "input.multi"]]
+    ]'>raw list</button>
+    <button click='[
+      ["getValue", "input.multi", "vals"],
+      ["setValue", "#v7-out", "count = { count(vals) }"]
+    ]'>count(vals)</button>
+    <button click='[
+      ["getValue", "input.multi", "vals"],
+      ["setValue", "#v7-out", "sum = { sum(vals) }"]
+    ]'>sum(vals)</button>
+    <button click='[
+      ["getValue", "input.multi", "vals"],
+      ["setValue", "#v7-out", "avg = { avg(vals) }"]
+    ]'>avg(vals)</button>
+    <button click='[
+      ["getValue", "input.multi", "vals"],
+      ["setValue", "#v7-out", "min = { min(vals) }, max = { max(vals) }"]
+    ]'>min / max</button>
+  </section>
+
+  <!-- ── Cross-command: getText ↔ setValue ───────────────── -->
+  <section>
+    <h2>Mix text and value</h2>
+    <p class="desc">Read text into an input, and read an input into text.</p>
+    <div class="row"><span class="label">Text:</span> <span class="target" id="v8-text">text source</span></div>
+    <div class="row"><span class="label">Input:</span> <input id="v8-input" type="text" value="input source"></div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="v8-out">(empty)</span></div>
+    <button click='["setValue", "#v8-input", ["getText", "#v8-text"]]'>text → input</button>
+    <button click='["setText", "#v8-out", ["getValue", "#v8-input"]]'>input → text</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <div class="row"><span class="label">Target:</span> <input id="v9-target" type="text" value="still works"></div>
+    <button click='["setValue"]'>only command name</button>
+    <button click='["setValue", "#v9-target"]'>missing value</button>
+    <button click='["setValu", "#v9-target", "typo"]'>typo command name</button>
+    <button click='["getValue", "#nope"]'>missing selector</button>
+    <button click='["getValue", "#v9-target", "v", "{ unknownVar }"]'>unknown identifier in expr</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

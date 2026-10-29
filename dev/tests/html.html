@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Html commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: block; margin: 4px 0; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .target-inline { display: inline-block; min-width: 80px; }
+  </style>
+</head>
+<body>
+  <h1>Html commands</h1>
+
+  <!-- ── setHtml ─────────────────────────────────────────── -->
+  <section>
+    <h2>setHtml</h2>
+    <p class="desc">Replace inner HTML. HTML is parsed, unlike setText.</p>
+    <div class="row"><span class="label">Target:</span> <div class="target" id="h1-target">initial <em>rich</em> content</div></div>
+    <button click='["setHtml", "#h1-target", "<p>new paragraph</p>"]'>set simple</button>
+    <button click='["setHtml", "#h1-target", "<h3>Title</h3><p>Body <strong>bold</strong></p>"]'>set multi</button>
+    <button click='["setHtml", "#h1-target", ""]'>clear</button>
+    <button click='["setHtml", "#h1-target", "<em>delayed</em>", 800]'>delayed 800ms</button>
+    <button click='["setHtml", "#h1-target", "<script>alert(1)</script>no script tag"]'>attempt script (sanity)</button>
+  </section>
+
+  <!-- ── appendHtml ──────────────────────────────────────── -->
+  <section>
+    <h2>appendHtml</h2>
+    <p class="desc">Append HTML to the end.</p>
+    <div class="row"><span class="label">Target:</span> <div class="target" id="h2-target">base</div></div>
+    <button click='["setHtml", "#h2-target", "base"]'>reset</button>
+    <button click='["appendHtml", "#h2-target", " <em>[em]</em>"]'>append em</button>
+    <button click='["appendHtml", "#h2-target", " <strong>[strong]</strong>", 500]'>append delayed 500ms</button>
+    <button click='["appendHtml", "#h2-target", " <span>[span]</span>"]'>append span</button>
+  </section>
+
+  <!-- ── prependHtml ─────────────────────────────────────── -->
+  <section>
+    <h2>prependHtml</h2>
+    <p class="desc">Prepend HTML to the start.</p>
+    <div class="row"><span class="label">Target:</span> <div class="target" id="h3-target">base</div></div>
+    <button click='["setHtml", "#h3-target", "base"]'>reset</button>
+    <button click='["prependHtml", "#h3-target", "<em>[em]</em> "]'>prepend em</button>
+    <button click='["prependHtml", "#h3-target", "<strong>[strong]</strong> ", 500]'>prepend delayed 500ms</button>
+    <button click='["prependHtml", "#h3-target", "<span>[span]</span> "]'>prepend span</button>
+  </section>
+
+  <!-- ── getHtml: basics ─────────────────────────────────── -->
+  <section>
+    <h2>getHtml · basics</h2>
+    <p class="desc">Read inner HTML and write the result into an output.</p>
+    <div class="row"><span class="label">Source:</span> <div class="target" id="h4-src"><strong>Hello</strong> World</div></div>
+    <div class="row"><span class="label">Result:</span> <div class="target" id="h4-out">(empty)</div></div>
+    <button click='["setHtml", "#h4-out", ["getHtml", "#h4-src"]]'>copy src → out</button>
+    <button click='[
+      ["getHtml", "#h4-src", "v"],
+      ["setHtml", "#h4-out", "<div>got: { v }</div>"]
+    ]'>alias + template</button>
+  </section>
+
+
+
+  <!-- ── getHtml: multiple elements ──────────────────────── -->
+  <section>
+    <h2>getHtml · multiple elements</h2>
+    <p class="desc">Read from all matching elements at once.</p>
+    <div class="row"><span class="label">Source:</span>
+      <div class="target-inline target multi"><b>a</b></div>
+      <div class="target-inline target multi"><i>b</i></div>
+      <div class="target-inline target multi"><u>c</u></div>
+    </div>
+    <div class="row"><span class="label">Result:</span> <div class="target" id="h6-out">(empty)</div></div>
+    <button click='[
+      ["setText", "#h6-out", ["getHtml", "div.multi"]]
+    ]'>raw list (array of html)</button>
+    <button click='[
+      ["getHtml", "div.multi", "vals"],
+      ["setText", "#h6-out", "count = { count(vals) }"]
+    ]'>count(vals)</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <p class="desc">Should report to console and continue.</p>
+    <div class="row"><span class="label">Target:</span> <div class="target" id="h7-target">still works</div></div>
+    <button click='["setHtml"]'>only command name</button>
+    <button click='["setHtml", "#h7-target"]'>missing html</button>
+    <button click='["setHtm", "#h7-target", "typo"]'>typo command name</button>
+    <button click='["setHtml", "#h7-target", ["getHtml", "#nope"]]'>nested getHtml on missing</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Text commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 80px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 80px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Text commands</h1>
+
+  <!-- ── setText ─────────────────────────────────────────── -->
+  <section>
+    <h2>setText</h2>
+    <p class="desc">Replace text content. Target is <code>#s1-target</code>.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s1-target">initial</span></div>
+    <button click='["setText", "#s1-target", "set by setText"]'>basic</button>
+    <button click='["setText", "#s1-target", ""]'>empty string</button>
+    <button click='["setText", "#s1-target", "delayed", 800]'>delayed 800ms</button>
+    <button click='["setText", "#s1-target", "this element", 0]'>static text with 0 delay</button>
+    <button click='["setText", "#s1-target", "<em>tags are literal</em>"]'>HTML is NOT parsed</button>
+  </section>
+
+  <!-- ── appendText ──────────────────────────────────────── -->
+  <section>
+    <h2>appendText</h2>
+    <p class="desc">Append to the end of <code>#s2-target</code>.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s2-target">base</span></div>
+    <button click='["setText", "#s2-target", "base"]'>reset</button>
+    <button click='["appendText", "#s2-target", " [appended]"]'>append</button>
+    <button click='["appendText", "#s2-target", " [delayed]", 500]'>append delayed 500ms</button>
+    <button click='["appendText", "#s2-target", " [multi]"]'>append #2</button>
+  </section>
+
+  <!-- ── prependText ─────────────────────────────────────── -->
+  <section>
+    <h2>prependText</h2>
+    <p class="desc">Prepend to the start of <code>#s3-target</code>.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="s3-target">base</span></div>
+    <button click='["setText", "#s3-target", "base"]'>reset</button>
+    <button click='["prependText", "#s3-target", "[prepended] "]'>prepend</button>
+    <button click='["prependText", "#s3-target", "[delayed] ", 500]'>prepend delayed 500ms</button>
+    <button click='["prependText", "#s3-target", "[multi] "]'>prepend #2</button>
+  </section>
+
+  <!-- ── getText: basics ─────────────────────────────────── -->
+  <section>
+    <h2>getText · basics</h2>
+    <p class="desc">Read from <code>#g1-src</code> and write the result into <code>#g1-out</code>.</p>
+    <div class="row"><span class="label">Source:</span> <span class="target" id="g1-src">Hello World</span></div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="g1-out">(empty)</span></div>
+    <button click='["setText", "#g1-out", ["getText", "#g1-src"]]'>copy src → out</button>
+    <button click='["setText", "#g1-out", ["getText", "#g1-src", "v", "nested: {v}"]]'>inline expression</button>
+    <button click='[
+      ["getText", "#g1-src", "v"],
+      ["setText", "#g1-out", "got: {v}"]
+    ]'>alias + template</button>
+  </section>
+
+  <!-- ── getText: string methods ─────────────────────────── -->
+  <section>
+    <h2>getText · string methods</h2>
+    <p class="desc">Same source, different transformations.</p>
+    <div class="row"><span class="label">Source:</span> <span class="target" id="g2-src">Hello World</span></div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="g2-out">(empty)</span></div>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "{ upperCase(v) }"]
+    ]'>upperCase</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "{ lowerCase(v) }"]
+    ]'>lowerCase</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "{ trim(v) }"]
+    ]'>trim</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "{ slice(v, 0, 5) }"]
+    ]'>slice(0,5)</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "length = { length(v) }"]
+    ]'>length</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "startsWith Hello = { startsWith(v, \"Hello\") }"]
+    ]'>startsWith</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "endsWith World = { endsWith(v, \"World\") }"]
+    ]'>endsWith</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["setText", "#g2-out", "indexOf o = { indexOf(v, \"o\") }"]
+    ]'>indexOf</button>
+    <button click='[
+      ["getText", "#g2-src", "v"],
+      ["getText", "#g2-src", "w"],
+      ["setText", "#g2-out", "{ slice(v, 0, indexOf(v, \" \")) }"]
+    ]'>slice + indexOf (word before space)</button>
+  </section>
+
+  <!-- ── getText: numbers ────────────────────────────────── -->
+  <section>
+    <h2>getText · numbers &amp; math</h2>
+    <p class="desc">Math on a numeric string. Each button writes a computed value.</p>
+    <div class="row"><span class="label">Source:</span> <span class="target" id="g3-src">42</span></div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="g3-out">(empty)</span></div>
+    <button click='[
+      ["getText", "#g3-src", "n"],
+      ["setText", "#g3-out", "n * 1 = { n * 1 }"]
+    ]'>n * 1 (numeric)</button>
+    <button click='[
+      ["getText", "#g3-src", "n"],
+      ["setText", "#g3-out", "n * 1 + 1 = { n * 1 + 1 }"]
+    ]'>n*1 + 1</button>
+    <button click='[
+      ["getText", "#g3-src", "n"],
+      ["setText", "#g3-out", "sqrt = { sqrt(n) }"]
+    ]'>sqrt</button>
+    <button click='[
+      ["getText", "#g3-src", "n"],
+      ["setText", "#g3-out", "pow(2) = { pow(n, 2) }"]
+    ]'>pow(n, 2)</button>
+    <button click='[
+      ["getText", "#g3-src", "n"],
+      ["setText", "#g3-out", "floor = { floor(n) }"]
+    ]'>floor</button>
+    <button click='[
+      ["getText", "#g3-src", "n"],
+      ["setText", "#g3-out", "abs = { abs(n) }"]
+    ]'>abs</button>
+ 
+  </section>
+
+  <!-- ── getText: multiple elements ──────────────────────── -->
+  <section>
+    <h2>getText · multiple elements</h2>
+    <p class="desc">Read from all matching elements at once.</p>
+    <div class="row"><span class="label">Source:</span>
+      <span class="target multi">10</span>
+      <span class="target multi">20</span>
+      <span class="target multi">30</span>
+    </div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="g4-out">(empty)</span></div>
+    <button click='[
+      ["setText", "#g4-out", ["getText", "span.multi"]]
+    ]'>raw list</button>
+    <button click='[
+      ["getText", "span.multi", "vals"],
+      ["setText", "#g4-out", "count = { count(vals) }"]
+    ]'>count(vals)</button>
+    <button click='[
+      ["getText", "span.multi", "vals"],
+      ["setText", "#g4-out", "sum = { sum(vals) }"]
+    ]'>sum(vals)</button>
+    <button click='[
+      ["getText", "span.multi", "vals"],
+      ["setText", "#g4-out", "avg = { avg(vals) }"]
+    ]'>avg(vals)</button>
+    <button click='[
+      ["getText", "span.multi", "vals"],
+      ["setText", "#g4-out", "min = { min(vals) }, max = { max(vals) }"]
+    ]'>min / max</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <p class="desc">These should report to the console and continue. Check DevTools.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="e1-target">still works</span></div>
+    <button click='["setText"]'>only command name</button>
+    <button click='["setText", "#e1-target"]'>missing text</button>
+    <button click='["setTxt", "#e1-target", "typo"]'>typo command name</button>
+    <button click='[
+      ["setText", "#e1-target", "first"],
+      ["unknownCmd"],
+      ["setText", "#e1-target", "second (ran after error)"]
+    ]'>unknown command continues</button>
+    <button click='["setText", "#does-not-exist", "no such element"]'>missing selector</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

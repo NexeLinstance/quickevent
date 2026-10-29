@@ -1,0 +1,1 @@
+https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/src/quickevent.js
