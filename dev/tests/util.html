@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Utility commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 120px; }
+    #log-target { font-family: monospace; background: #f8f8f8; padding: 6px; border-radius: 4px; min-height: 20px; }
+    input { padding: 4px 8px; width: 100%; max-width: 320px; margin: 4px 0; }
+    #scroll-area { height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 8px; }
+    #scroll-area div { padding: 8px; border-bottom: 1px dashed #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Utility commands</h1>
+
+  <!-- ── wait ────────────────────────────────────────────── -->
+  <section>
+    <h2>wait</h2>
+    <p class="desc">Blocks the chain for N milliseconds. All three lines should appear one second apart.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="u1-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#u1-target", "step 1"],
+      ["wait", 1000],
+      ["setText", "#u1-target", "step 2"],
+      ["wait", 1000],
+      ["setText", "#u1-target", "step 3"]
+    ]'>three steps, 1s apart</button>
+    <button click='[
+      ["setText", "#u1-target", "fast"],
+      ["wait", 100],
+      ["setText", "#u1-target", "fast done"]
+    ]'>100ms wait</button>
+  </section>
+
+  <!-- ── then ────────────────────────────────────────────── -->
+<section>
+  <h2>then</h2>
+  <p class="desc">then links the NEXT command to the ONE command immediately before it.</p>
+  
+  <div class="row"><span class="label">Target A:</span> <span class="target" id="u2-a">-</span></div>
+  <div class="row"><span class="label">Target B:</span> <span class="target" id="u2-b">-</span></div>
+  <div class="row"><span class="label">Target C:</span> <span class="target" id="u2-c">-</span></div>
+  <div class="row"><span class="label">Target D:</span> <span class="target" id="u2-d">-</span></div>
+
+  <button click='[
+    ["setText", "#u2-a", "A (runs immediately, takes 1000ms)", 1000],
+    ["then"],
+    ["setText", "#u2-b", "B (waits for A)",1000],
+    ["then"],
+    ["setText", "#u2-c", "C (waits for B)"],
+    ["setText", "#u2-d", "D (runs immediately, async with A)"]
+  ]'>A -> B -> C || D</button>
+</section>
+
+  <!-- ── log ─────────────────────────────────────────────── -->
+  <section>
+    <h2>log</h2>
+    <p class="desc">Write to console. Open DevTools.</p>
+    <button click='["log", "hello from log"]'>log a string</button>
+    <button click='["log", 42]'>log a number</button>
+    <button click='[
+      ["getText", "#u3-src", "v"],
+      ["log", "text from src: { v }"]
+    ]'>log a template</button>
+    <span id="u3-src" style="display:none">secret</span>
+  </section>
+
+  <!-- ── focus ───────────────────────────────────────────── -->
+  <section>
+    <h2>focus</h2>
+    <div class="row"><span class="label">Target:</span> <input id="u4-input" type="text" placeholder="click button to focus"></div>
+    <button click='["focus", "#u4-input"]'>focus input</button>
+  </section>
+
+  <!-- ── scrollTo ────────────────────────────────────────── -->
+  <section>
+    <h2>scrollTo</h2>
+    <p class="desc">Scroll the inner box to an element or to a pixel offset.</p>
+    <div class="row"><span class="label">Target:</span> <div id="scroll-area">
+      <div id="u5-top">top</div>
+      <div>item</div><div>item</div><div>item</div><div>item</div>
+      <div id="u5-middle">middle</div>
+      <div>item</div><div>item</div><div>item</div><div>item</div>
+      <div id="u5-bottom">bottom</div>
+    </div></div>
+    <button click='["scrollTo", "#u5-middle"]'>scroll to #middle</button>
+    <button click='["scrollTo", "#u5-bottom"]'>scroll to #bottom</button>
+    <button click='["scrollTo", "#u5-top"]'>scroll to #top</button>
+  </section>
+
+  <!-- ── getLocation ─────────────────────────────────────── -->
+  <section>
+    <h2>getLocation</h2>
+    <p class="desc">Read parts of the current URL. Writes to output.</p>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="u6-out">(empty)</span></div>
+    <button click='["setText", "#u6-out", ["getLocation", "href"]]'>href</button>
+    <button click='["setText", "#u6-out", ["getLocation", "pathname"]]'>pathname</button>
+    <button click='["setText", "#u6-out", ["getLocation", "search"]]'>search</button>
+    <button click='["setText", "#u6-out", ["getLocation", "hash"]]'>hash</button>
+    <button click='[
+      ["getLocation", "href", "u"],
+      ["setText", "#u6-out", "URL length = { length(u) }"]
+    ]'>alias + length</button>
+  </section>
+
+  <!-- ── copyClipboard / pasteClipboard ──────────────────── -->
+  <section>
+    <h2>Clipboard</h2>
+    <p class="desc">These require HTTPS or localhost and user permission.</p>
+    <div class="row"><span class="label">Source:</span> <input id="u7-src" type="text" value="clipboard payload"></div>
+    <div class="row"><span class="label">Target:</span> <input id="u7-dst" type="text" value=""></div>
+    <button click='["copyClipboard", "#u7-src"]'>copy input value</button>
+    <button click='["copyClipboard", "#u7-src", "hardcoded payload"]'>copy hardcoded</button>
+    <button click='["pasteClipboard", "#u7-dst"]'>paste into dst</button>
+  </section>
+
+  <!-- ── redirect / reload (do not click unless you mean it) ── -->
+  <section>
+    <h2>redirect / reload</h2>
+    <p class="desc">These will navigate away. Only click if you mean it.</p>
+    <button click='["redirect", "/dev/tests/index.html"]'>redirect to test gallery</button>
+    <button click='["reload"]'>reload page</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="u8-target">still works</span></div>
+    <button click='["wait"]'>wait missing arg</button>
+    <button click='["wait", "abc"]'>wait non-number</button>
+    <button click='["focus", "#nope"]'>focus missing element</button>
+    <button click='["getLocation", "not-a-key"]'>getLocation invalid key</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>
+
+
+
+
+

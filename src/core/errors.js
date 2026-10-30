@@ -70,6 +70,11 @@ export const CODES = {
     message: () => '"else" used without a preceding "if".',
     hint: 'An "else" must follow an "if" or "elif".',
   },
+  E022: {
+    phase: 'flow',
+    message: () => 'Nested "if" is not supported.',
+    hint: 'Refactor the conditions into a single "if" with "and"/"or", or use separate event attributes.',
+  },
 
   // Security
   E030: {
@@ -245,3 +250,5 @@ function levenshtein(a, b) {
 
   return prev[b.length];
 }
+
+

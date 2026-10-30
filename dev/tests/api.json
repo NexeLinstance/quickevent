@@ -1,0 +1,10 @@
+{
+  "name": "Nexelpy",
+  "version": "1.0.0",
+  "users": [
+    { "id": 1, "name": "alex" },
+    { "id": 2, "name": "Sara" },
+    { "id": 3, "name": "rose" }
+  ],
+  "view": "<div style=\"padding:8px; background:#cfc; border-radius:4px;\"><strong>Server-rendered view</strong> from JSON</div>"
+}

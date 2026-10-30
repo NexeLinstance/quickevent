@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Modal commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    
+    /* Style the dialog content, not the dialog itself */
+    dialog { padding: 0; border: none; background: transparent; }
+    dialog > div { 
+      background: white; 
+      padding: 24px; 
+      border-radius: 8px; 
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
+      min-width: 280px; 
+    }
+  </style>
+</head>
+<body>
+  <h1>Modal commands</h1>
+
+  <!-- ── Basic modal ─────────────────────────────────────── -->
+  <section>
+    <h2>showModal · basic</h2>
+    <p class="desc">Show a modal dialog. Click outside or press Escape to close.</p>
+    <button click='["showModal", "#modal1", {}, true, 0, 300]'>show modal</button>
+    <button click='["hideModal", "#modal1"]'>hide modal</button>
+
+    <dialog id="modal1">
+      <div>
+        <h3>Hello</h3>
+        <p>This is a modal.</p>
+        <input type="text" placeholder="Type something..." autofocus>
+      </div>
+    </dialog>
+  </section>
+
+  <!-- ── Custom backdrop ─────────────────────────────────── -->
+  <section>
+    <h2>Custom backdrop</h2>
+    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(255,0,0,0.4)"}, true, 0, 300]'>
+      red backdrop
+    </button>
+    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(0,100,255,0.4)", "filter": "blur(4px)"}, true, 0, 300]'>
+      blue backdrop + blur
+    </button>
+    <button click='["hideModal", "#modal2"]'>hide</button>
+
+    <dialog id="modal2">
+      <div>Custom backdrop modal</div>
+    </dialog>
+  </section>
+
+  <!-- ── No auto-hide ────────────────────────────────────── -->
+  <section>
+    <h2>No auto-hide</h2>
+    <p class="desc">autoHide=false; Escape doesn't close. Use hideModal.</p>
+    <button click='["showModal", "#modal3", {}, false, 0, 300]'>show (no auto-hide)</button>
+    <button click='["hideModal", "#modal3"]'>hide</button>
+
+    <dialog id="modal3">
+      <div>
+        <p>No auto-hide. Escape won't close.</p>
+        <button click='["hideModal", "#modal3"]'>close</button>
+      </div>
+    </dialog>
+  </section>
+
+  <!-- ── Animated ────────────────────────────────────────── -->
+  <section>
+    <h2>Animated</h2>
+    <p class="desc">Fade duration 1s.</p>
+    <button click='["showModal", "#modal4", {}, true, 0, 1000]'>show (1s fade)</button>
+    <button click='["hideModal", "#modal4", 0, 1000]'>hide (1s fade)</button>
+
+    <dialog id="modal4">
+      <div>Animated modal</div>
+    </dialog>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <button click='["showModal", "#nope", {}, true, 0, 300]'>modal not found</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

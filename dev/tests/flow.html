@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Flow commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 120px; }
+    input { padding: 4px 8px; width: 100%; max-width: 320px; margin: 4px 0; }
+  </style>
+</head>
+<body>
+  <h1>Flow commands</h1>
+
+  <!-- ── if (single condition) ──────────────────────────── -->
+  <section>
+    <h2>if · single condition</h2>
+    <div class="row"><span class="label">Input:</span> <input id="if1-input" type="text" value="50"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="if1-target">(empty)</span></div>
+    <button click='[
+      ["getValue", "#if1-input", "n"],
+      ["if", "{ n * 1 > 100 }", [
+        ["setText", "#if1-target", "big!"]
+      ]]
+    ]'>if n>100</button>
+    <button click='[
+      ["getValue", "#if1-input", "n"],
+      ["if", "{ n * 1 <= 100 }", [
+        ["setText", "#if1-target", "small or equal"]
+      ]]
+    ]'>if n<=100</button>
+  </section>
+
+  <!-- ── if / elif / else ───────────────────────────────── -->
+  <section>
+    <h2>if / elif / else</h2>
+    <div class="row"><span class="label">Input:</span> <input id="if2-input" type="text" value="75"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="if2-target">(empty)</span></div>
+    <button click='[
+      ["getValue", "#if2-input", "n"],
+      ["if", "{ n * 1 > 100 }", [
+        ["setText", "#if2-target", "{n} > 100"]
+      ]],
+      ["elif", "{ n * 1 > 50 }", [
+        ["setText", "#if2-target", "{n} > 50"]
+      ]],
+      ["else", [
+        ["setText", "#if2-target", "{n} <= 50"]
+      ]]
+    ]'>if/elif/else</button>
+  </section>
+
+  <!-- ── Multiple conditions with and/or ────────────────── -->
+  <section>
+    <h2>and / or</h2>
+    <div class="row"><span class="label">Input:</span> <input id="if3-input" type="text" value="75"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="if3-target">(empty)</span></div>
+    <button click='[
+      ["getValue", "#if3-input", "n"],
+      ["if", ["{ n * 1 > 50 }", "{ n * 1 < 90 }"], [
+        ["setText", "#if3-target", "between 50 and 90 (AND)"]
+      ]]
+    ]'>AND</button>
+    <button click='[
+      ["getValue", "#if3-input", "n"],
+      ["if", ["{ n * 1 < 10 }", "or", "{ n * 1 > 90 }"], [
+        ["setText", "#if3-target", "out of range (OR)"]
+      ]]
+    ]'>OR</button>
+    <button click='[
+      ["getValue", "#if3-input", "n"],
+      ["if", ["{ n * 1 > 50 }", "{ n * 1 < 60 }", "or", "{ n * 1 > 90 }", "{ n * 1 < 100 }"], [
+        ["setText", "#if3-target", "in (50,60) or (90,100)"]
+      ]]
+    ]'>(50,60) OR (90,100)</button>
+  </section>
+
+  <!-- ── Multiple commands in body ──────────────────────── -->
+  <section>
+    <h2>Multiple commands in body</h2>
+    <div class="row"><span class="label">Input:</span> <input id="if4-input" type="text" value="75"></div>
+    <div class="row"><span class="label">Target A:</span> <span class="target" id="if4-a">(empty)</span></div>
+    <div class="row"><span class="label">Target B:</span> <span class="target" id="if4-b">(empty)</span></div>
+    <button click='[
+      ["getValue", "#if4-input", "n"],
+      ["if",["{ n * 1 > 50 }"], [
+        ["setText", "#if4-a", "condition met"],
+        ["setText", "#if4-b", "multiple commands"]
+      ]]
+    ]'>if with multiple commands</button>
+  </section>
+
+  <!-- ── for: array ─────────────────────────────────────── -->
+  <section>
+    <h2>for · array</h2>
+    <div class="row">
+      <span class="label">Source:</span>
+      <span class="target multi">10</span>
+      <span class="target multi">20</span>
+      <span class="target multi">30</span>
+    </div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="for1-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#for1-target", ""],
+      ["for", "i", ["getText", "span.multi"], [
+        ["appendText", "#for1-target", " { i } "]
+      ]]
+    ]'>for each value</button>
+    <button click='[
+      ["setText", "#for1-target", ""],
+      ["for", "i", ["getText", "span.multi"], [
+        ["getText", "#for1-target", "current"],
+        ["setText", "#for1-target", "{ current }[{ i * 1 }]"]
+      ]]
+    ]'>with accumulator</button>
+  </section>
+
+  <!-- ── for: object ────────────────────────────────────── -->
+  <section>
+    <h2>for · object</h2>
+    <p class="desc">We'll use an inline JSON object as source.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="for2-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#for2-target", ""],
+      ["for", ["k", "v"], {"name": "alex", "age": "42"}, [
+        ["appendText", "#for2-target", "{ k }:{ v } "]
+      ]]
+    ]'>for key/value</button>
+  </section>
+
+  <!-- ── for with if ─────────────────────────────────────── -->
+  <section>
+    <h2>for + if</h2>
+    <div class="row">
+      <span class="label">Source:</span>
+      <span class="target multi">10</span>
+      <span class="target multi">20</span>
+      <span class="target multi">30</span>
+      <span class="target multi">40</span>
+    </div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="for3-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#for3-target", ""],
+      ["for", "i", ["getText", "span.multi"], [
+        ["if", "{ i * 1 > 15 }", [
+          ["appendText", "#for3-target", " { i } "]
+        ]]
+      ]]
+    ]'>values > 15</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="err-target">(empty)</span></div>
+    <button click='[
+      ["elif", "{ true }", [["setText", "#err-target", "x"]]]
+    ]'>elif without if</button>
+    <button click='[
+      ["else", [["setText", "#err-target", "x"]]]
+    ]'>else without if</button>
+    <button click='["if", "{ true }"]'>if without body</button>
+    <button click='["for", "i", "not-an-array", [["setText", "#err-target", "x"]]]'>for with invalid source</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Cookie commands</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 120px; }
+  </style>
+</head>
+<body>
+  <h1>Cookie commands</h1>
+
+  <!-- ── setCookie ───────────────────────────────────────── -->
+  <section>
+    <h2>setCookie</h2>
+    <p class="desc">Write a cookie. Check DevTools &rarr; Application &rarr; Cookies.</p>
+    <button click='["setCookie", "theme", "dark"]'>theme = dark</button>
+    <button click='["setCookie", "theme", "light"]'>theme = light (overwrites)</button>
+    <button click='["setCookie", "user", "alex"]'>user = alex</button>
+    <button click='["setCookie", "lang", "fa"]'>lang = fa</button>
+    <button click='["setCookie", "short", "x", 1]'>short (1 day)</button>
+  </section>
+
+  <!-- ── getCookie ───────────────────────────────────────── -->
+  <section>
+    <h2>getCookie · basics</h2>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="c1-out">(empty)</span></div>
+    <button click='["setText", "#c1-out", ["getCookie", "theme"]]'>read theme</button>
+    <button click='["setText", "#c1-out", ["getCookie", "user"]]'>read user</button>
+    <button click='["setText", "#c1-out", ["getCookie", "lang"]]'>read lang</button>
+    <button click='["setText", "#c1-out", ["getCookie", "missing"]]'>read missing (returns undefined)</button>
+  </section>
+
+  <!-- ── getCookie with alias + expression ──────────────── -->
+  <section>
+    <h2>getCookie · alias + expression</h2>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="c2-out">(empty)</span></div>
+    <button click='[
+      ["getCookie", "theme", "t"],
+      ["setText", "#c2-out", "theme is { t }"]
+    ]'>alias</button>
+    <button click='[
+      ["getCookie", "theme", "t"],
+      ["setText", "#c2-out", "theme uppercase = { upperCase(t) }"]
+    ]'>alias + upperCase</button>
+    <button click='[
+      ["getCookie", "theme", "t"],
+      ["setText", "#c2-out", "length = { length(t) }"]
+    ]'>alias + length</button>
+    <button click='[
+      ["getCookie", "user", "u"],
+      ["setText", "#c2-out", "hello, { u }!"]
+    ]'>alias + greeting</button>
+    <button click='["setText", "#c2-out", ["getCookie", "theme", "t", "{ upperCase(t) }"]]'>
+      inline expr
+    </button>
+  </section>
+
+  <!-- ── Persistent theme toggle ─────────────────────────── -->
+  <section>
+    <h2>Persistent theme toggle</h2>
+    <p class="desc">Reload the page; the theme should persist.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="c3-target">default theme</span></div>
+<button click='[
+  ["getCookie", "theme", "t"],
+  ["if", "{ length(t) == 4 }", [
+    ["setStyle", "#c3-target", "background:#222; color:white;"],
+    ["setText", "#c3-target", "dark theme applied"]
+  ]],
+  ["else", [
+    ["setStyle", "#c3-target", "background:#eee; color:black;"],
+    ["setText", "#c3-target", "light theme applied"]
+  ]]
+]'>apply saved theme</button>
+    <button click='["setCookie", "theme", "dark"]'>save dark</button>
+    <button click='["setCookie", "theme", "light"]'>save light</button>
+  </section>
+
+  <!-- ── Errors ──────────────────────────────────────────── -->
+  <section>
+    <h2>Errors (expected)</h2>
+    <button click='["setCookie"]'>setCookie missing args</button>
+    <button click='["setCookie", "x"]'>setCookie missing value</button>
+    <button click='["getCookie"]'>getCookie missing key</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>
