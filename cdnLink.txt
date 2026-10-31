@@ -1,1 +1,1 @@
-https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/src/quickevent.js
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/src/setup.js"></script>
