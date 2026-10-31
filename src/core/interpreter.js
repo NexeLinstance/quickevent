@@ -25,6 +25,7 @@ export async function runEffects(effects, ctx) {
     const [name, ...rawArgs] = effect;
     const commandInfo = { name, index: i };
 
+    // ── then ───────────────────────────────────────────────
     if (name === 'then') {
       waitForPrev = true;
       continue;
@@ -89,7 +90,6 @@ export async function runEffects(effects, ctx) {
         }
       }
 
-      // If preceded by then, wait for prev.
       if (waitForPrev && prevPromise) {
         await prevPromise;
       }
@@ -126,22 +126,13 @@ export async function runEffects(effects, ctx) {
       }
     }
 
-    let delay = 0;
-    let execArgs = resolvedArgs;
-    if (desc.name !== 'animate' && desc.schema) {
-      const lastType = desc.schema[desc.schema.length - 1];
-      if (lastType === 'number?' || lastType === 'number') {
-        const last = resolvedArgs[resolvedArgs.length - 1];
-        if (typeof last === 'number') {
-          delay = last;
-          execArgs = resolvedArgs.slice(0, -1);
-        }
-      }
-    }
+    // DO NOT extract delay from args here. 
+    // The command itself knows which arg is the delay (e.g. setText has delay as 3rd arg).
+    // We just pass all args to the command.
 
     const execute = async () => {
       try {
-        const result = desc.run(ctx, execArgs);
+        const result = desc.run(ctx, resolvedArgs);
         if (result instanceof Promise) {
           await result;
         }
@@ -154,16 +145,8 @@ export async function runEffects(effects, ctx) {
     if (waitForPrev && prevPromise) {
       promise = (async () => {
         await prevPromise;
-        if (delay > 0) await new Promise(r => setTimeout(r, delay));
         await execute();
       })();
-    } else if (delay > 0) {
-      promise = new Promise(resolve => {
-        setTimeout(async () => {
-          await execute();
-          resolve();
-        }, delay);
-      });
     } else {
       promise = execute();
     }

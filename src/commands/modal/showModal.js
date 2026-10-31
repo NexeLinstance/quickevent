@@ -1,23 +1,50 @@
 // src/commands/modal/showModal.js
 
-const MODAL_RESET_STYLES = {
-  position: 'fixed',
-  margin: '0',
-  padding: '0',
-  border: 'none',
-  background: 'transparent',
-  overflow: 'visible',
-  maxWidth: 'none',
-  maxHeight: 'none',
-  inset: '0',
+const ANIMATIONS = {
+  fade: {
+    in:  [{ opacity: 0 }, { opacity: 1 }],
+    out: [{ opacity: 1 }, { opacity: 0 }]
+  },
+  zoom: {
+    in:  [{ opacity: 0, transform: 'scale(0.8)' }, { opacity: 1, transform: 'scale(1)' }],
+    out: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.8)' }]
+  },
+  slideDown: {
+    in:  [{ opacity: 0, transform: 'translateY(-60px)' }, { opacity: 1, transform: 'translateY(0)' }],
+    out: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-60px)' }]
+  },
+  slideUp: {
+    in:  [{ opacity: 0, transform: 'translateY(60px)' }, { opacity: 1, transform: 'translateY(0)' }],
+    out: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(60px)' }]
+  },
+  none: {
+    in:  null,
+    out: null
+  }
 };
 
-function applyResetStyles(modal) {
-  const anim = modal.animate([{}, MODAL_RESET_STYLES], {
-    duration: 0,
-    fill: 'forwards',
-  });
-  anim.finished.catch(() => {});
+// ONLY remove the visual box (background, border, shadow). 
+// DO NOT touch position, margin, or inset, so the browser's default centering works perfectly.
+const RESET_STYLES = {
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none',
+};
+
+function applyReset(el) {
+  // Enforce styles instantly
+  el.animate([{}, RESET_STYLES], { duration: 0, fill: 'forwards' });
+}
+
+function setBackdrop(el, bg, filter) {
+  // Apply custom backdrop color/filter with duration 0
+  el.animate(
+    [
+      { backgroundColor: 'transparent', backdropFilter: 'none' },
+      { backgroundColor: bg, backdropFilter: filter }
+    ],
+    { pseudoElement: '::backdrop', duration: 0, fill: 'forwards' }
+  );
 }
 
 export default {
@@ -25,89 +52,72 @@ export default {
   kind: 'effect',
   blocking: false,
   capabilities: ['dom.modal'],
-  schema: ['selector', 'object?', 'boolean?', 'number?', 'number?'],
-  run(ctx, [selector, backdropStyle = {}, autoHide = true, delay = 0, duration = 300]) {
-    const modal = ctx.dom.query(selector)[0];
-    if (!modal || !(modal instanceof HTMLDialogElement)) {
-      throw new Error(`showModal: "${selector}" is not a <dialog>`);
-    }
-    if (modal.open) return;
+  schema: ['selector', 'object?', 'boolean?', 'number?', 'number?', 'string?'],
+  run(ctx, [selector, backdropStyle = {}, autoHide = true, delay = 0, duration = 300, type = 'fade']) {
+    const els = ctx.dom.query(selector);
+    if (!els.length) throw new Error(`showModal: "${selector}" not found`);
 
-    // Reset the dialog's own styles
-    applyResetStyles(modal);
+    els.forEach((el) => {
+      if (!(el instanceof HTMLDialogElement)) return;
+      if (el.open) return;
 
-    const bg = backdropStyle.backgroundColor ?? 'rgba(0,0,0,0.5)';
-    const filter = backdropStyle.filter ?? 'none';
+      // 1. Reset visual styles (background, border, shadow) BEFORE showing
+      applyReset(el);
 
-    const doShow = () => {
-      modal.showModal();
+      // 2. Hide with opacity 0 BEFORE showModal to prevent the white flash
+      el.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 0, fill: 'forwards' });
 
-      // Style ::backdrop using Web Animations API
-      modal.animate(
-        [
-          { backgroundColor: 'transparent', backdropFilter: 'none' },
-          { backgroundColor: bg, backdropFilter: filter }
-        ],
-        {
-          pseudoElement: '::backdrop',
-          duration: 0, // Apply instantly
-          fill: 'forwards'
-        }
-      );
+      // 3. Show modal (browser handles centering via Top Layer & margin: auto)
+      el.showModal();
 
-      // Fade-in the modal content
-      if (duration > 0) {
-        modal.animate([{ opacity: 0 }, { opacity: 1 }], {
+      // 4. Apply backdrop style (now that ::backdrop exists)
+      const bg = backdropStyle.backgroundColor ?? 'rgba(0,0,0,0.5)';
+      const filter = backdropStyle.filter ?? 'none';
+      setBackdrop(el, bg, filter);
+
+      // 5. Animate the content (fade-in, zoom, etc.)
+      const preset = ANIMATIONS[type] || ANIMATIONS.none;
+      if (preset.in && duration > 0) {
+        el.animate(preset.in, {
           duration,
-          fill: 'forwards',
+          delay,
           easing: 'ease',
+          fill: 'forwards'
         });
       }
 
-      // Auto-hide
+      // 6. Auto-hide logic
       if (autoHide) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) hideModal(modal, duration);
+        el.addEventListener('click', function handler(e) {
+          if (e.target === el) {
+            hideModal(el, 0, duration, type);
+          }
         });
-        modal.oncancel = () => hideModal(modal, duration);
+        el.addEventListener('cancel', function cancelHandler(e) {
+          e.preventDefault();
+          hideModal(el, 0, duration, type);
+        });
       } else {
-        modal.oncancel = (e) => e.preventDefault();
+        el.addEventListener('cancel', (e) => e.preventDefault());
       }
-    };
-
-    return new Promise((resolve) => {
-      if (delay > 0) setTimeout(() => { doShow(); resolve(); }, delay);
-      else { doShow(); resolve(); }
     });
 
-    function hideModal(dlg, dur) {
-      if (dur > 0) {
-        // Fade out content
-        const anim = dlg.animate([{ opacity: 1 }, { opacity: 0 }], {
-          duration: dur,
-          fill: 'forwards',
-        });
-        
-        // Fade out backdrop
-        dlg.animate(
-          [
-            { backgroundColor: bg, backdropFilter: filter },
-            { backgroundColor: 'transparent', backdropFilter: 'none' }
-          ],
-          {
-            pseudoElement: '::backdrop',
-            duration: dur,
-            fill: 'forwards'
-          }
-        );
-
-        anim.finished.then(() => {
-          if (dlg.open) dlg.close();
-          dlg.getAnimations().forEach((a) => a.cancel());
-        });
-      } else {
-        if (dlg.open) dlg.close();
+    function hideModal(el, del, dur, t) {
+      const preset = ANIMATIONS[t] || ANIMATIONS.none;
+      if (!preset.out || dur === 0) {
+        if (el.open) el.close();
+        return;
       }
+      const anim = el.animate(preset.out, {
+        duration: dur,
+        delay: del,
+        easing: 'ease',
+        fill: 'forwards'
+      });
+      anim.finished.then(() => {
+        if (el.open) el.close();
+        el.getAnimations().forEach(a => a.cancel());
+      });
     }
   },
 };

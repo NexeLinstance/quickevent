@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Tick</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 90px; color: #555; }
+    .timer { font-family: monospace; font-size: 24px; font-weight: bold; background: #222; color: #0f0; padding: 8px 16px; border-radius: 4px; display: inline-block; min-width: 120px; text-align: center; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; }
+  </style>
+</head>
+<body>
+  <h1>Tick commands</h1>
+
+  <!-- ── Basic Timer ─────────────────────────────────────── -->
+  <section>
+    <h2>Basic Timer (Count Down)</h2>
+    <p class="desc">A 10-second countdown. The `tick` event updates the display every second.</p>
+    
+    <div class="row">
+      <div class="timer" id="timer1" tick='["setText", "this", "{tick}"]'>00:00:00</div>
+    </div>
+    
+    <button click='["setTick", "#timer1", "10", "--"]'>set (10s, --)</button>
+    <button click='["playTick", "#timer1"]'>play</button>
+    <button click='["pauseTick", "#timer1"]'>pause</button>
+    <button click='["resetTick", "#timer1", true]'>reset & play</button>
+    <button click='["resetTick", "#timer1", false]'>reset only</button>
+  </section>
+
+  <!-- ── Quick Play (inline config) ──────────────────────── -->
+  <section>
+    <h2>Quick Play</h2>
+    <p class="desc">If you pass time to `playTick`, it configures and starts immediately.</p>
+    
+    <div class="row">
+      <div class="timer" id="timer2" tick='["setText", "this", "{tick}"]'>00:00:00</div>
+    </div>
+    
+    <button click='["playTick", "#timer2", "1:30", "--"]'>play 1m 30s (--)</button>
+    <button click='["pauseTick", "#timer2"]'>pause</button>
+  </section>
+
+  <!-- ── Count Up + H/M/S ───────────────────────────────── -->
+  <section>
+    <h2>Count Up + H/M/S</h2>
+    <p class="desc">Show hours, minutes, seconds separately.</p>
+    
+    <div class="row">
+      <div class="timer" id="timer3" tick='["setText", "this", "{tick.h}h {tick.m}m {tick.s}s"]'>0h 0m 0s</div>
+    </div>
+    
+    <button click='["playTick", "#timer3", "1:00:00", "++"]'>play 1 hour (++)</button>
+    <button click='["pauseTick", "#timer3"]'>pause</button>
+  </section>
+
+  <!-- ── Conditional Style (Less than 30s) ──────────────── -->
+  <section>
+    <h2>Conditional Style</h2>
+    <p class="desc">Timer turns red when less than 5 seconds remain.</p>
+    
+    <div class="row">
+      <div class="timer" id="timer4" tick='[
+        ["setText", "this", "{tick}"],
+        ["if", "{ tick.total < 5 }", ["addStyle", "this", "color:red; background:#500;"]],
+        ["else", ["addStyle", "this", "color:#0f0; background:#222;"]]
+      ]'>00:00:05</div>
+    </div>
+    
+    <button click='["playTick", "#timer4", "5", "--"]'>play 5s countdown</button>
+    <button click='["resetTick", "#timer4"]'>reset</button>
+  </section>
+
+  <!-- ── Total Seconds ───────────────────────────────────── -->
+  <section>
+    <h2>Total Seconds</h2>
+    <p class="desc">Use `{tick.total}` for the total seconds.</p>
+    
+    <div class="row">
+      <div class="timer" id="timer5" tick='["setText", "this", "{tick.total}"]'>0</div>
+    </div>
+    
+    <button click='["playTick", "#timer5", 138, "--"]'>play 20s (--)</button>
+    <button click='["pauseTick", "#timer5"]'>pause</button>
+  </section>
+  <script type="module" src="./setup.js"></script>
+</body>
+</body>
+</html>

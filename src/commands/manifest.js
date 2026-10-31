@@ -13,6 +13,7 @@ import ajax from './ajax/index.js';
 import cookie from './cookie/index.js';
 import dialog from './dialog/index.js';
 import modal from './modal/index.js';
+import tick from './tick/index.js';
 
 const commands = [
   ...text,
@@ -29,6 +30,7 @@ const commands = [
   ...cookie,
   ...dialog,
   ...modal,
+  ...tick,
 ];
 
 export default commands;

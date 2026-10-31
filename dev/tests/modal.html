@@ -14,14 +14,14 @@
     .label { display: inline-block; min-width: 90px; color: #555; }
     
     /* Style the dialog content, not the dialog itself */
-    dialog { padding: 0; border: none; background: transparent; }
+    /* dialog { padding: 0; border: none; background: transparent; }
     dialog > div { 
       background: white; 
       padding: 24px; 
       border-radius: 8px; 
       box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
       min-width: 280px; 
-    }
+    } */
   </style>
 </head>
 <body>
@@ -31,7 +31,7 @@
   <section>
     <h2>showModal · basic</h2>
     <p class="desc">Show a modal dialog. Click outside or press Escape to close.</p>
-    <button click='["showModal", "#modal1", {}, true, 0, 300]'>show modal</button>
+    <button click='["showModal", "#modal1", {}, true, 0, 1000]'>show modal</button>
     <button click='["hideModal", "#modal1"]'>hide modal</button>
 
     <dialog id="modal1">
@@ -46,10 +46,10 @@
   <!-- ── Custom backdrop ─────────────────────────────────── -->
   <section>
     <h2>Custom backdrop</h2>
-    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(255,0,0,0.4)"}, true, 0, 300]'>
+    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(255,0,0,0.4)"}, true, 0, 1000]'>
       red backdrop
     </button>
-    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(0,100,255,0.4)", "filter": "blur(4px)"}, true, 0, 300]'>
+    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(0,100,255,0.4)", "filter": "blur(4px)"}, true, 0, 1000]'>
       blue backdrop + blur
     </button>
     <button click='["hideModal", "#modal2"]'>hide</button>
@@ -63,13 +63,13 @@
   <section>
     <h2>No auto-hide</h2>
     <p class="desc">autoHide=false; Escape doesn't close. Use hideModal.</p>
-    <button click='["showModal", "#modal3", {}, false, 0, 300]'>show (no auto-hide)</button>
-    <button click='["hideModal", "#modal3"]'>hide</button>
+    <button click='["showModal", "#modal3", {}, false, 0, 1000]'>show (no auto-hide)</button>
+    <button click='["hideModal", "#modal3",1000]'>hide</button>
 
     <dialog id="modal3">
       <div>
         <p>No auto-hide. Escape won't close.</p>
-        <button click='["hideModal", "#modal3"]'>close</button>
+        <button click='["hideModal", "#modal3",0,1000]'>close</button>
       </div>
     </dialog>
   </section>

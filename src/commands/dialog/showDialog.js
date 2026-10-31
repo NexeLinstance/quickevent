@@ -1,31 +1,52 @@
 // src/commands/dialog/showDialog.js
 
-const DIALOG_RESET_STYLES = {
-  position: 'fixed',
-  margin: '0',
-  padding: '0',
-  border: 'none',
-  background: 'transparent',
-  overflow: 'visible',
-  maxWidth: 'none',
-  maxHeight: 'none',
-  inset: 'auto',
+const dismissControllers = new WeakMap();
+
+const RESET_STYLES = {
+  margin: '0', border: '0', padding: '0', background: 'transparent',
+  overflow: 'visible', maxWidth: 'none', maxHeight: 'none',
+  boxShadow: 'none', zIndex: '9999',
 };
 
-function applyResetStyles(dialog) {
-  // Apply reset styles instantly (duration: 0) using animate
-  const anim = dialog.animate([{}, DIALOG_RESET_STYLES], {
-    duration: 0,
-    fill: 'forwards',
-  });
-  anim.finished.catch(() => {});
+function resolveEl(target, ctx) {
+  if (target instanceof Element) return target;
+  if (target === 'this') return ctx.element;
+  if (typeof target === 'string') return ctx.dom.query(target)[0] || null;
+  return null;
 }
 
-function parsePosition(pos) {
-  if (!pos) return { x: 'center', y: 'center' };
-  const parts = pos.split('-');
-  if (parts.length === 2) return { x: parts[0], y: parts[1] };
-  return { x: 'center', y: 'center' };
+function parseCssUnitToPx(value, element) {
+  if (value == null || value === '') return 0;
+  if (typeof value === 'number') return value;
+  const raw = String(value).trim();
+  const m = raw.match(/^(-?[\d.]+)\s*(px|rem|em|vw|vh|%)?$/);
+  if (!m) return parseFloat(raw) || 0;
+  const num = parseFloat(m[1]), unit = m[2] || 'px';
+  switch (unit) {
+    case 'px': return num;
+    case 'rem': return num * (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16);
+    case 'em': return num * (parseFloat(getComputedStyle(element || document.body).fontSize) || 16);
+    case 'vw': return (num * window.innerWidth) / 100;
+    case 'vh': return (num * window.innerHeight) / 100;
+    default: return num;
+  }
+}
+
+function resolvePoints(side, rect, isRTL, isAnchor = true) {
+  const [xSide, ySide] = String(side || 'center-center').split('-');
+  const isLeft = (xSide === 'start' && !isRTL) || (xSide === 'end' && isRTL);
+  const isRight = (xSide === 'end' && !isRTL) || (xSide === 'start' && isRTL);
+  let x = 0;
+  if (xSide === 'center') x = isAnchor ? rect.left + rect.width / 2 : rect.width / 2;
+  else if (isLeft) x = isAnchor ? rect.left : 0;
+  else if (isRight) x = isAnchor ? rect.right : rect.width;
+
+  let y = 0;
+  if (ySide === 'center') y = isAnchor ? rect.top + rect.height / 2 : rect.height / 2;
+  else if (ySide === 'top') y = isAnchor ? rect.top : 0;
+  else if (ySide === 'bottom') y = isAnchor ? rect.bottom : rect.height;
+
+  return { x, y };
 }
 
 export default {
@@ -34,100 +55,113 @@ export default {
   blocking: false,
   capabilities: ['dom.dialog'],
   schema: ['array', 'array', 'number?', 'number?'],
-  run(ctx, [dialogSpec, anchorSpec, delay = 0, duration = 300]) {
-    const [dialogSel, position, offsetX, offsetY, autoHide] = dialogSpec;
-    const [anchorSel, anchorPos] = anchorSpec;
+  run(ctx, [dialogConfig, anchorConfig, delay = 0, duration = 300]) {
+    const [dialogTarget, dialogSide, rawX = 0, rawY = 0, autoDismiss = true] = dialogConfig;
+    const [anchorTarget, anchorSide] = anchorConfig;
 
-    const dialog = ctx.dom.query(dialogSel)[0];
-    const anchor =
-      anchorSel === 'viewport' || anchorSel === 'body'
-        ? null
-        : ctx.dom.query(anchorSel)[0];
+    const dialog = resolveEl(dialogTarget, ctx);
+    const anchor = resolveEl(anchorTarget, ctx);
 
-    if (!dialog) {
-      throw new Error(`showDialog: dialog "${dialogSel}" not found`);
-    }
-    if (!anchor && anchorSel !== 'viewport' && anchorSel !== 'body') {
-      throw new Error(`showDialog: anchor "${anchorSel}" not found`);
+    if (!dialog) throw new Error(`showDialog: "${dialogTarget}" not found`);
+    if (!anchor && anchorTarget !== 'viewport' && anchorTarget !== 'body') {
+      throw new Error(`showDialog: anchor "${anchorTarget}" not found`);
     }
 
-    // Reset the dialog's own styles
-    applyResetStyles(dialog);
+    // 1. Cancel previous animations to avoid conflicts
+    dialog.getAnimations().forEach(a => a.cancel());
 
-    const doShow = () => {
-      if (!dialog.open) dialog.show();
+    // 2. Hide instantly before showing to prevent flash of default styles
+    dialog.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 0, fill: 'forwards' });
 
-      // Position relative to anchor
-      const ax = offsetX ?? 0;
-      const ay = offsetY ?? 0;
+    // 3. Show dialog (removes display: none)
+    if (!dialog.open) dialog.show();
 
-      let anchorRect;
-      if (anchorSel === 'viewport') {
-        anchorRect = {
-          left: 0, top: 0,
-          width: window.innerWidth, height: window.innerHeight,
-        };
-      } else if (anchorSel === 'body') {
-        anchorRect = {
-          left: 0, top: 0,
-          width: document.body.scrollWidth, height: document.body.scrollHeight,
-        };
-      } else {
-        anchorRect = anchor.getBoundingClientRect();
-      }
+    // 4. Calculate position
+    const aR = anchorTarget === 'viewport'
+      ? { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight }
+      : anchorTarget === 'body'
+      ? { left: 0, top: 0, width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight }
+      : anchor.getBoundingClientRect();
 
-      const pos = parsePosition(anchorPos);
-      const dialogRect = dialog.getBoundingClientRect();
+    const dR = dialog.getBoundingClientRect();
+    const isRTL = getComputedStyle(document.documentElement).direction === 'rtl';
 
-      let top = 0, left = 0;
-      if (pos.x === 'start') left = anchorRect.left + ax;
-      else if (pos.x === 'center') left = anchorRect.left + anchorRect.width / 2 - dialogRect.width / 2 + ax;
-      else if (pos.x === 'end') left = anchorRect.right - dialogRect.width + ax;
+    const ap = resolvePoints(anchorSide, aR, isRTL, true);
+    const doff = resolvePoints(dialogSide, dR, isRTL, false);
 
-      if (pos.y === 'top') top = anchorRect.top + ay;
-      else if (pos.y === 'center') top = anchorRect.top + anchorRect.height / 2 - dialogRect.height / 2 + ay;
-      else if (pos.y === 'bottom') top = anchorRect.bottom - dialogRect.height + ay;
+    const px = parseCssUnitToPx(rawX, dialog);
+    const py = parseCssUnitToPx(rawY, dialog);
+    const dx = isRTL ? -px : px;
 
-      dialog.style.left = `${left}px`;
-      dialog.style.top = `${top}px`;
+    let posType = 'fixed';
+    let scrollX = 0, scrollY = 0;
 
-      // Fade-in animation for content
-      if (duration > 0) {
-        dialog.animate([{ opacity: 0 }, { opacity: 1 }], {
-          duration,
-          fill: 'forwards',
-          easing: 'ease',
-        });
-      }
+    // For viewport, stick to the screen (fixed). For body or others, scroll with the page (absolute).
+    if (anchorTarget !== 'viewport') {
+      posType = 'absolute';
+      scrollX = window.scrollX;
+      scrollY = window.scrollY;
+    }
 
-      // Auto-hide logic
-      if (autoHide) {
-        setTimeout(() => {
-          const handler = (e) => {
-            if (!dialog.contains(e.target)) {
-              hide(dialog);
-              document.removeEventListener('click', handler);
-            }
-          };
-          document.addEventListener('click', handler);
-          dialog._qeClickHandler = handler;
-        }, 10);
+    const left = ap.x - doff.x + dx + scrollX;
+    const top = ap.y - doff.y + py + scrollY;
 
-        dialog.oncancel = () => hide(dialog);
-      }
+    // 5. Apply all reset and position styles immediately via animate (no inline styles)
+    const pos = {
+      ...RESET_STYLES,
+      position: posType,
+      left: `${left}px`,
+      top: `${top}px`,
+      opacity: 0, // Start transparent for the fade-in
     };
+    dialog.animate([pos, pos], { duration: 0, fill: 'forwards' });
 
-    return new Promise((resolve) => {
-      if (delay > 0) setTimeout(() => { doShow(); resolve(); }, delay);
-      else { doShow(); resolve(); }
+    // Force a browser reflow so it registers opacity: 0 before starting the animation
+    void dialog.offsetWidth;
+
+    // 6. Fade in smoothly
+    dialog.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: duration,
+      delay: delay,
+      fill: 'forwards',
+      easing: 'ease',
     });
 
-    function hide(dlg) {
-      if (dlg.open) dlg.close();
-      if (dlg._qeClickHandler) {
-        document.removeEventListener('click', dlg._qeClickHandler);
-        delete dlg._qeClickHandler;
-      }
+    // 7. Auto dismiss logic
+    const prev = dismissControllers.get(dialog);
+    if (prev) prev.abort();
+
+    if (autoDismiss) {
+      const ctrl = new AbortController();
+      dismissControllers.set(dialog, ctrl);
+
+      document.addEventListener('pointerdown', (e) => {
+        if (!dialog.contains(e.target) && (!anchor || !anchor.contains(e.target))) {
+          hideDialog(dialog, 0, duration);
+        }
+      }, { signal: ctrl.signal });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideDialog(dialog, 0, duration);
+      }, { signal: ctrl.signal });
+    }
+
+    function hideDialog(el, del, dur) {
+      if (!el.open) return;
+      const ctrl = dismissControllers.get(el);
+      if (ctrl) { ctrl.abort(); dismissControllers.delete(el); }
+
+      el.getAnimations().forEach(a => a.cancel());
+
+      el.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: dur,
+        delay: del,
+        fill: 'forwards',
+        easing: 'ease',
+      }).finished.then(() => {
+        if (el.open) el.close();
+        el.getAnimations().forEach(a => a.cancel());
+      });
     }
   },
 };

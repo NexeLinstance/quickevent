@@ -1,48 +1,41 @@
 // src/commands/modal/hideModal.js
 
+const ANIMATIONS = {
+  fade: { out: [{ opacity: 1 }, { opacity: 0 }] },
+  zoom: { out: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.8)' }] },
+  slideDown: { out: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-60px)' }] },
+  slideUp: { out: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(60px)' }] },
+  none: { out: null }
+};
+
 export default {
   name: 'hideModal',
   kind: 'effect',
   blocking: false,
   capabilities: ['dom.modal'],
-  schema: ['selector', 'number?', 'number?'],
-  run(ctx, [selector, delay = 0, duration = 300]) {
-    const modal = ctx.dom.query(selector)[0];
-    if (!modal || !(modal instanceof HTMLDialogElement) || !modal.open) return;
+  schema: ['selector', 'number?', 'number?', 'string?'],
+  run(ctx, [selector, delay = 0, duration = 300, type = 'fade']) {
+    const els = ctx.dom.query(selector);
+    els.forEach((el) => {
+      if (!(el instanceof HTMLDialogElement) || !el.open) return;
 
-    const doHide = () => {
-      if (duration > 0) {
-        // Fade out content
-        const anim = modal.animate([{ opacity: 1 }, { opacity: 0 }], {
-          duration,
-          fill: 'forwards',
-        });
-
-        // Fade out backdrop (assumes the default or previously set style)
-        modal.animate(
-          [
-            { backgroundColor: 'rgba(0,0,0,0.5)' }, // fallback baseline
-            { backgroundColor: 'transparent' }
-          ],
-          {
-            pseudoElement: '::backdrop',
-            duration,
-            fill: 'forwards'
-          }
-        );
-
-        anim.finished.then(() => {
-          if (modal.open) modal.close();
-          modal.getAnimations().forEach((a) => a.cancel());
-        });
-      } else {
-        if (modal.open) modal.close();
+      const preset = ANIMATIONS[type] || ANIMATIONS.none;
+      if (!preset.out || duration === 0) {
+        el.close();
+        return;
       }
-    };
 
-    return new Promise((resolve) => {
-      if (delay > 0) setTimeout(() => { doHide(); resolve(); }, delay);
-      else { doHide(); resolve(); }
+      const anim = el.animate(preset.out, {
+        duration,
+        delay,
+        easing: 'ease',
+        fill: 'forwards'
+      });
+
+      anim.finished.then(() => {
+        el.close();
+        el.getAnimations().forEach(a => a.cancel());
+      });
     });
   },
 };

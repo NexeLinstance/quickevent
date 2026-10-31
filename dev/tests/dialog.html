@@ -15,14 +15,14 @@
     .anchor { padding: 8px 16px; background: #6ac; color: white; border-radius: 6px; cursor: pointer; display: inline-block; margin: 8px 4px; }
     
     /* Style the dialog content, not the dialog itself */
-    dialog { padding: 0; border: none; background: transparent; }
+    /* dialog { padding: 0; border: none; background: transparent; }
     dialog > div { 
       background: white; 
       padding: 16px; 
       border-radius: 8px; 
       box-shadow: 0 4px 16px rgba(0,0,0,0.2); 
       min-width: 200px; 
-    }
+    } */
   </style>
 </head>
 <body>
@@ -35,10 +35,10 @@
     <div class="row">
       <button class="anchor" id="anchor1">hover or click me</button>
     </div>
-    <button click='["showDialog", ["#dlg1", "start-top", 0, 8, true], ["#anchor1", "end-bottom"], 0, 300]'>
+    <button click='["showDialog", ["#dlg1", "start-top", 0, 8, true], ["#anchor1", "end-bottom"], 0, 1000]'>
       show dialog
     </button>
-    <button click='["hideDialog", "#dlg1", 0, 300]'>hide</button>
+    <button click='["hideDialog", "#dlg1", 0, 1000]'>hide</button>
 
     <dialog id="dlg1">
       <div>I am a dialog</div>
@@ -69,6 +69,12 @@
     <p class="desc">Show dialog at viewport center (independent of scroll).</p>
     <button click='["showDialog", ["#dlg3", "center-center", 0, 0, true], ["viewport", "center-center"], 0, 300]'>
       center of viewport
+    </button>
+    <button click='["showDialog", ["#dlg3", "center-center", 0, 0, true], ["viewport", "start-bottom"], 0, 300]'>
+      toast of viewport
+    </button>
+    <button click='["showDialog", ["#dlg3", "center-center", 0, 0, true], ["body", "center-center"], 0, 300]'>
+      center of body
     </button>
     <button click='["hideDialog", "#dlg3"]'>hide</button>
 

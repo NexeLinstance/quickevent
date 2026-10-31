@@ -2,6 +2,7 @@
 import { createContext } from '../core/context.js';
 import { runEvent } from '../core/interpreter.js';
 import { createError } from '../core/errors.js';
+import { tickStates, getTickValue } from '../commands/tick/timer.js';
 
 const BUBBLE_EVENTS = [
   'click',
@@ -97,6 +98,14 @@ function handleEvent(e, type, { registry, reporter }) {
     registry,
     reporter,
   });
+
+  // Inject tick values for the "tick" event
+  if (type === 'tick') {
+    const state = tickStates.get(target);
+    if (state) {
+      ctx.vars.tick = getTickValue(state);
+    }
+  }
 
   runEvent(effects, ctx).catch(err => {
     reporter.report(err, { element: target, attribute: type });
