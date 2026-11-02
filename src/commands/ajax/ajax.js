@@ -15,53 +15,50 @@ function flattenParams(obj, prefix = '') {
 function injectHeadLinks(htmlString) {
   if (typeof htmlString !== 'string' || !htmlString.trim()) return;
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlString, 'text/html');
-  const newNodes = doc.querySelectorAll('link[href], script[src]');
-  
-  if (!newNodes.length) return;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    
+    // Get all existing link hrefs and script srcs in the head as strings
+    const existingUrls = new Set();
+    document.head.querySelectorAll('link[href], script[src]').forEach(node => {
+      const url = node.getAttribute('href') || node.getAttribute('src');
+      if (url) existingUrls.add(url);
+    });
 
-  // Get current head links/scripts for comparison
-  const existingNodes = document.head.querySelectorAll('link[href], script[src]');
-  const existingUrls = new Set(
-    Array.from(existingNodes).map(node => node.href || node.src)
-  );
+    // Process new links
+    doc.querySelectorAll('link[href]').forEach(link => {
+      const href = link.getAttribute('href');
+      if (!href || existingUrls.has(href)) return;
 
-  newNodes.forEach(node => {
-    if (node.tagName === 'LINK') {
-      const href = node.getAttribute('href');
-      if (!href) return;
-      
-      // Resolve absolute URL to check for duplicates
-      const absoluteUrl = new URL(href, window.location.href).href;
-      if (existingUrls.has(absoluteUrl)) return;
-
-      // Create a new link element in the actual document
       const newLink = document.createElement('link');
-      newLink.rel = node.getAttribute('rel') || 'stylesheet';
+      newLink.rel = link.getAttribute('rel') || 'stylesheet';
       newLink.href = href;
-      if (node.hasAttribute('media')) newLink.media = node.getAttribute('media');
+      if (link.hasAttribute('integrity')) newLink.integrity = link.getAttribute('integrity');
+      if (link.hasAttribute('crossorigin')) newLink.crossOrigin = link.getAttribute('crossorigin');
       
       document.head.appendChild(newLink);
-      existingUrls.add(absoluteUrl); // Prevent duplicates within the same payload
-    } 
-    else if (node.tagName === 'SCRIPT') {
-      const src = node.getAttribute('src');
-      if (!src) return;
+      existingUrls.add(href);
+    });
 
-      const absoluteUrl = new URL(src, window.location.href).href;
-      if (existingUrls.has(absoluteUrl)) return;
+    // Process new scripts
+    doc.querySelectorAll('script[src]').forEach(script => {
+      const src = script.getAttribute('src');
+      if (!src || existingUrls.has(src)) return;
 
       const newScript = document.createElement('script');
       newScript.src = src;
-      if (node.hasAttribute('type')) newScript.type = node.getAttribute('type');
-      if (node.hasAttribute('async')) newScript.async = true;
-      if (node.hasAttribute('defer')) newScript.defer = true;
+      if (script.hasAttribute('type')) newScript.type = script.getAttribute('type');
+      if (script.hasAttribute('async')) newScript.async = true;
+      if (script.hasAttribute('defer')) newScript.defer = true;
       
       document.head.appendChild(newScript);
-      existingUrls.add(absoluteUrl);
-    }
-  });
+      existingUrls.add(src);
+    });
+
+  } catch (err) {
+    console.error('[QE] Failed to inject head links:', err);
+  }
 }
 
 export default {
@@ -111,7 +108,7 @@ export default {
       ctx.vars.status_code = res.status;
       ctx.vars.status_message = res.statusText;
 
-      // Inject links/scripts from JSON payload into <head>
+      // Inject head links if available and request was successful
       if (res.ok && responseData && typeof responseData === 'object' && responseData.QE_links_header) {
         injectHeadLinks(responseData.QE_links_header);
       }
