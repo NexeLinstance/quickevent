@@ -1,41 +1,88 @@
-// src/commands/modal/hideModal.js
-
-const ANIMATIONS = {
-  fade: { out: [{ opacity: 1 }, { opacity: 0 }] },
-  zoom: { out: [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(0.8)' }] },
-  slideDown: { out: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-60px)' }] },
-  slideUp: { out: [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(60px)' }] },
-  none: { out: null }
-};
+import {
+  getModalState,
+  setModalState,
+  cleanupModalListeners
+} from './showModal.js';
 
 export default {
   name: 'hideModal',
   kind: 'effect',
-  blocking: false,
-  capabilities: ['dom.modal'],
-  schema: ['selector', 'number?', 'number?', 'string?'],
-  run(ctx, [selector, delay = 0, duration = 300, type = 'fade']) {
-    const els = ctx.dom.query(selector);
-    els.forEach((el) => {
-      if (!(el instanceof HTMLDialogElement) || !el.open) return;
+  capabilities: ['dom.dialog'],
+  schema: ['string', 'number?', 'number?', 'string?'],
+  run(ctx, [
+    target,
+    delay = 0,
+    duration = 300,
+    type = 'fade'
+  ]) {
+    const dialog = ctx.dom.query(target)[0];
+    if (!dialog || !(dialog instanceof HTMLDialogElement) || !dialog.open) return;
 
-      const preset = ANIMATIONS[type] || ANIMATIONS.none;
-      if (!preset.out || duration === 0) {
-        el.close();
-        return;
+    if (getModalState(dialog) === 'closing') return;
+
+    const animDuration = type === 'none' ? 0 : Number(duration) || 300;
+    const animDelay = Number(delay) || 0;
+
+    cleanupModalListeners(dialog);
+
+    const finalize = () => {
+      setModalState(dialog, 'idle');
+      dialog.getAnimations().forEach(a => {
+        if (a.id === 'modal-fade' || a.id === 'modal-backdrop' || a.id === 'modal-reset') {
+          a.cancel();
+        }
+      });
+      if (dialog.open) {
+        dialog.close();
       }
+    };
 
-      const anim = el.animate(preset.out, {
-        duration,
-        delay,
-        easing: 'ease',
-        fill: 'forwards'
-      });
+    if (animDuration === 0) {
+      finalize();
+      return;
+    }
 
-      anim.finished.then(() => {
-        el.close();
-        el.getAnimations().forEach(a => a.cancel());
-      });
+    setModalState(dialog, 'closing');
+
+    const currentOpacity = parseFloat(window.getComputedStyle(dialog).opacity) || 1;
+
+    dialog.getAnimations().forEach(anim => {
+      if (anim.id === 'modal-fade' || anim.id === 'modal-backdrop') {
+        anim.cancel();
+      }
     });
-  },
+
+    const dialogAnim = dialog.animate(
+      [
+        { opacity: currentOpacity },
+        { opacity: 0 }
+      ],
+      {
+        id: 'modal-fade',
+        duration: animDuration,
+        delay: animDelay,
+        fill: 'forwards',
+        easing: 'ease-in'
+      }
+    );
+
+    const backdropAnim = dialog.animate(
+      [
+        { opacity: currentOpacity },
+        { opacity: 0 }
+      ],
+      {
+        id: 'modal-backdrop',
+        pseudoElement: '::backdrop',
+        duration: animDuration,
+        delay: animDelay,
+        fill: 'forwards',
+        easing: 'ease-in'
+      }
+    );
+
+    Promise.all([dialogAnim.finished, backdropAnim.finished])
+      .then(finalize)
+      .catch(() => {});
+  }
 };

@@ -12,6 +12,58 @@ function flattenParams(obj, prefix = '') {
   }, {});
 }
 
+function injectHeadLinks(htmlString) {
+  if (typeof htmlString !== 'string' || !htmlString.trim()) return;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  const newNodes = doc.querySelectorAll('link[href], script[src]');
+  
+  if (!newNodes.length) return;
+
+  // Get current head links/scripts for comparison
+  const existingNodes = document.head.querySelectorAll('link[href], script[src]');
+  const existingUrls = new Set(
+    Array.from(existingNodes).map(node => node.href || node.src)
+  );
+
+  newNodes.forEach(node => {
+    if (node.tagName === 'LINK') {
+      const href = node.getAttribute('href');
+      if (!href) return;
+      
+      // Resolve absolute URL to check for duplicates
+      const absoluteUrl = new URL(href, window.location.href).href;
+      if (existingUrls.has(absoluteUrl)) return;
+
+      // Create a new link element in the actual document
+      const newLink = document.createElement('link');
+      newLink.rel = node.getAttribute('rel') || 'stylesheet';
+      newLink.href = href;
+      if (node.hasAttribute('media')) newLink.media = node.getAttribute('media');
+      
+      document.head.appendChild(newLink);
+      existingUrls.add(absoluteUrl); // Prevent duplicates within the same payload
+    } 
+    else if (node.tagName === 'SCRIPT') {
+      const src = node.getAttribute('src');
+      if (!src) return;
+
+      const absoluteUrl = new URL(src, window.location.href).href;
+      if (existingUrls.has(absoluteUrl)) return;
+
+      const newScript = document.createElement('script');
+      newScript.src = src;
+      if (node.hasAttribute('type')) newScript.type = node.getAttribute('type');
+      if (node.hasAttribute('async')) newScript.async = true;
+      if (node.hasAttribute('defer')) newScript.defer = true;
+      
+      document.head.appendChild(newScript);
+      existingUrls.add(absoluteUrl);
+    }
+  });
+}
+
 export default {
   name: 'ajax',
   kind: 'source',
@@ -50,16 +102,19 @@ export default {
         responseData = await res.text();
       }
 
-      // Update context for ajaxSuccess / ajaxError
       ctx.ok = res.ok;
       ctx.response = responseData;
       ctx.statusCode = res.status;
       ctx.statusMessage = res.statusText;
 
-      // Expose response to variables for use in templates (e.g. { response.name })
       ctx.vars.response = responseData;
       ctx.vars.status_code = res.status;
       ctx.vars.status_message = res.statusText;
+
+      // Inject links/scripts from JSON payload into <head>
+      if (res.ok && responseData && typeof responseData === 'object' && responseData.QE_links_header) {
+        injectHeadLinks(responseData.QE_links_header);
+      }
 
       return responseData;
     } catch (err) {
