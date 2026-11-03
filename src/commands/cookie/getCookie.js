@@ -6,32 +6,30 @@ export default {
   kind: 'source',
   capabilities: ['browser.cookie'],
   async resolve(ctx, args) {
-    const [key, aliasOrExpr, maybeExpr] = args;
+    let key, alias, expr;
 
-    let alias = null;
-    let expr = null;
-
-    if (typeof aliasOrExpr === 'string') {
-      if (aliasOrExpr.includes('{')) expr = aliasOrExpr;
-      else alias = aliasOrExpr;
+    if (Array.isArray(args[0])) {
+      key = args[0][0];
+      alias = args[0][1] || null;
+      expr = args[1] || null;
+    } else {
+      key = args[0];
+      alias = args[1] || null;
+      expr = args[2] || null;
     }
-    if (typeof maybeExpr === 'string' && maybeExpr.includes('{')) {
-      expr = maybeExpr;
-    }
 
-    // Read the cookie
+    if (!key) return undefined;
+
     const encodedKey = encodeURIComponent(key);
     const match = document.cookie.match(
       new RegExp(`(?:^|;\\s*)${encodedKey}=([^;]*)`)
     );
 
-    if (!match) return undefined;
-
-    const value = decodeURIComponent(match[1]);
+    const value = match ? decodeURIComponent(match[1]) : '';
 
     if (alias) ctx.vars[alias] = value;
 
-    if (expr) {
+    if (expr && typeof expr === 'string' && expr.includes('{')) {
       const result = renderTemplate(expr, ctx.vars);
       if (result.store) ctx.vars[result.store.key] = result.store.value;
       return result.value;
