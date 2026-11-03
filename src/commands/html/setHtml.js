@@ -1,16 +1,14 @@
-// src/commands/html/setHtml.js
+import { cleanHtml } from '../../core/sanitize.js';
 
 export default {
   name: 'setHtml',
   kind: 'effect',
   blocking: false,
-  capabilities: ['dom.write', 'dom.unsafeHtml'],
+  capabilities: ['dom.write'],
   schema: ['selector', 'any', 'number?'],
   run(ctx, [selector, html, delay = 0]) {
-    return ctx.dom.each(
-      selector,
-      el => { el.innerHTML = html == null ? '' : String(html); },
-      delay
-    );
+    return ctx.dom.each(selector, el => {
+      el.innerHTML = cleanHtml(html);
+    }, delay);
   },
 };

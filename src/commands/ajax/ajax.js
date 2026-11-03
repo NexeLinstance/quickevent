@@ -12,6 +12,7 @@ function flattenParams(obj, prefix = '') {
   }, {});
 }
 
+
 function injectHeadLinks(htmlString) {
   if (typeof htmlString !== 'string' || !htmlString.trim()) return;
 
@@ -25,30 +26,36 @@ function injectHeadLinks(htmlString) {
       if (url) existingUrls.add(url);
     });
 
+    // Only allow same-origin resources for safety
+    const isSafe = (urlStr) => {
+      try {
+        const u = new URL(urlStr, window.location.href);
+        return u.origin === window.location.origin;
+      } catch {
+        return false;
+      }
+    };
+
     doc.querySelectorAll('link[href]').forEach(link => {
       const href = link.getAttribute('href');
-      if (!href || existingUrls.has(href)) return;
+      if (!href || existingUrls.has(href) || !isSafe(href)) return;
 
       const newLink = document.createElement('link');
       newLink.rel = link.getAttribute('rel') || 'stylesheet';
       newLink.href = href;
-      if (link.hasAttribute('integrity')) newLink.integrity = link.getAttribute('integrity');
-      if (link.hasAttribute('crossorigin')) newLink.crossOrigin = link.getAttribute('crossorigin');
-      
       document.head.appendChild(newLink);
       existingUrls.add(href);
     });
 
     doc.querySelectorAll('script[src]').forEach(script => {
       const src = script.getAttribute('src');
-      if (!src || existingUrls.has(src)) return;
+      if (!src || existingUrls.has(src) || !isSafe(src)) return;
 
       const newScript = document.createElement('script');
       newScript.src = src;
       if (script.hasAttribute('type')) newScript.type = script.getAttribute('type');
       if (script.hasAttribute('async')) newScript.async = true;
       if (script.hasAttribute('defer')) newScript.defer = true;
-      
       document.head.appendChild(newScript);
       existingUrls.add(src);
     });
@@ -57,6 +64,8 @@ function injectHeadLinks(htmlString) {
     console.error('[QE] Failed to inject head links:', err);
   }
 }
+
+
 
 export default {
   name: 'ajax',

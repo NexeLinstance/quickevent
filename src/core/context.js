@@ -57,7 +57,7 @@ export function createContext(options = {}) {
     scheduler: new Scheduler(),
 
     // Execution state
-    vars: {},              // alias store (from getters with alias, assignments)
+    vars: Object.create(null),              // alias store (from getters with alias, assignments)
     branch: { ran: false },// shared state for if/elif/else chain
     loop: null,            // set during "for"
     response: null,        // last AJAX response

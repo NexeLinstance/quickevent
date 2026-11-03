@@ -1,6 +1,7 @@
 // src/commands/func/createFunc.js
 
-const funcRegistry = new WeakMap();
+const FORBIDDEN_NAMES = new Set(['__proto__', 'constructor', 'prototype']);
+const VALID_NAME = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 export default {
   name: 'createFunc',
@@ -8,13 +9,8 @@ export default {
   schema: ['array', 'array'],
   async run(ctx, [argSpec, body]) {
     const funcName = ctx.attribute;
-    if (!funcName) return;
+    if (!funcName) throw new Error('createFunc must be used as an attribute name');
 
-    if (!funcRegistry.has(ctx.element)) {
-      funcRegistry.set(ctx.element, {});
-    }
-    
-    // Parse args: ["arg1", {"arg2": "default"}]
     const args = [];
     if (Array.isArray(argSpec)) {
       for (const item of argSpec) {
@@ -28,10 +24,17 @@ export default {
       }
     }
 
-    funcRegistry.get(ctx.element)[funcName] = {
+    // Validate arg names for security
+    for (const arg of args) {
+      if (!VALID_NAME.test(arg.name) || FORBIDDEN_NAMES.has(arg.name)) {
+        throw new Error(`createFunc: invalid argument name "${arg.name}"`);
+      }
+    }
+
+    ctx.element._qeFunctions = ctx.element._qeFunctions || {};
+    ctx.element._qeFunctions[funcName] = {
       args,
       body
     };
   },
-  getRegistry() { return funcRegistry; }
 };
