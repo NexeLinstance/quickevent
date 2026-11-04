@@ -1,6 +1,6 @@
 {
   "name": "quickevent",
-  "version": "1.3.16",
+  "version": "1.3.17",
   "description": "Attribute-driven command framework for the DOM.",
   "type": "module",
   "main": "src/quickevent.js",
@@ -14,6 +14,9 @@
   ],
   "scripts": {
     "build": "esbuild src/quickevent.js --bundle --minify --format=esm --outfile=dist/quickevent.min.js"
+  },
+  "dependencies": {
+    "dompurify": "^3.0.0"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"
