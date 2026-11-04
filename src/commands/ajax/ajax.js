@@ -12,7 +12,6 @@ function flattenParams(obj, prefix = '') {
   }, {});
 }
 
-
 function injectHeadLinks(htmlString) {
   if (typeof htmlString !== 'string' || !htmlString.trim()) return;
 
@@ -26,7 +25,6 @@ function injectHeadLinks(htmlString) {
       if (url) existingUrls.add(url);
     });
 
-    // Only allow same-origin resources for safety
     const isSafe = (urlStr) => {
       try {
         const u = new URL(urlStr, window.location.href);
@@ -65,35 +63,56 @@ function injectHeadLinks(htmlString) {
   }
 }
 
-
-
 export default {
   name: 'ajax',
   kind: 'source',
   capabilities: ['network.fetch'],
-  schema: ['string', 'string?', 'object?'],
-  async resolve(ctx, [url, method = 'GET', body = null]) {
+  schema: ['string', 'string?', 'any?', 'object?'],
+  async resolve(ctx, [url, method = 'GET', body = null, customHeaders = {}]) {
     const upperMethod = method.toUpperCase();
     let finalUrl = url;
     let fetchBody = null;
-    const headers = {};
+    const headers = { ...customHeaders };
 
     if (body) {
       if (upperMethod === 'GET' || upperMethod === 'HEAD') {
-        const flat = typeof body === 'object' ? flattenParams(body) : body;
-        const params = new URLSearchParams(flat).toString();
-        if (params) finalUrl += (url.includes('?') ? '&' : '?') + params;
+        try {
+          const u = new URL(url, window.location.href);
+          const flat = typeof body === 'object' ? flattenParams(body) : body;
+          Object.entries(flat).forEach(([k, v]) => {
+            if (v !== null && v !== undefined) u.searchParams.set(k, v);
+          });
+          finalUrl = u.toString();
+        } catch {
+          finalUrl = url;
+        }
+      } else if (body instanceof FormData) {
+        fetchBody = body;
+        // Do NOT set Content-Type. Browser handles boundary automatically.
       } else {
-        fetchBody = typeof body === 'object' ? JSON.stringify(body) : String(body);
-        headers['Content-Type'] = 'application/json';
+        if (typeof body === 'string') {
+          fetchBody = body;
+          // Try to detect if it's JSON, otherwise use text/plain
+          try {
+            JSON.parse(body);
+            headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+          } catch {
+            headers['Content-Type'] = headers['Content-Type'] || 'text/plain';
+          }
+        } else {
+          fetchBody = JSON.stringify(body);
+          headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+        }
       }
     }
 
     try {
       const res = await fetch(finalUrl, {
         method: upperMethod === 'JSON' ? 'POST' : upperMethod,
-        headers: upperMethod === 'JSON' ? { 'Content-Type': 'application/json' } : headers,
-        body: fetchBody
+        headers,
+        body: fetchBody,
+        credentials: 'same-origin',
+        mode: 'cors',
       });
 
       const contentType = res.headers.get('content-type') || '';

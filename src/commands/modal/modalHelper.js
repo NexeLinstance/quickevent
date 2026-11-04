@@ -1,137 +1,92 @@
-// modalHelper.js
+// src/commands/modal/modalHelper.js
 
-export const MODAL_PRESETS = {
+const ANIMATIONS = {
   fade: {
-    dialog: [{ opacity: 0 }, { opacity: 1 }],
-    backdrop: [{ opacity: 0 }, { opacity: 1 }]
+    in: [{ opacity: 0 }, { opacity: 1 }],
+    out: [{ opacity: 0 }]
   },
   zoom: {
-    dialog: [
-      { opacity: 0, transform: 'scale(0.85)' },
-      { opacity: 1, transform: 'scale(1)' }
-    ],
-    backdrop: [{ opacity: 0 }, { opacity: 1 }]
+    in: [{ opacity: 0, transform: 'scale(0.8)' }, { opacity: 1, transform: 'scale(1)' }],
+    out: [{ opacity: 0, transform: 'scale(0.8)' }]
   },
   slideDown: {
-    dialog: [
-      { opacity: 0, transform: 'translateY(-30px)' },
-      { opacity: 1, transform: 'translateY(0)' }
-    ],
-    backdrop: [{ opacity: 0 }, { opacity: 1 }]
+    in: [{ opacity: 0, transform: 'translateY(-60px)' }, { opacity: 1, transform: 'translateY(0)' }],
+    out: [{ opacity: 0, transform: 'translateY(-60px)' }]
   },
   slideUp: {
-    dialog: [
-      { opacity: 0, transform: 'translateY(30px)' },
-      { opacity: 1, transform: 'translateY(0)' }
-    ],
-    backdrop: [{ opacity: 0 }, { opacity: 1 }]
+    in: [{ opacity: 0, transform: 'translateY(60px)' }, { opacity: 1, transform: 'translateY(0)' }],
+    out: [{ opacity: 0, transform: 'translateY(60px)' }]
   },
   none: {
-    dialog: [{ opacity: 1 }, { opacity: 1 }],
-    backdrop: [{ opacity: 1 }, { opacity: 1 }]
+    in: null,
+    out: null
   }
 };
 
-const modalStates = new WeakMap();
-const modalListeners = new WeakMap();
+const RESET_STYLES = {
+  backgroundColor: 'transparent',
+  border: 'none',
+  boxShadow: 'none',
+};
 
-export function getModalState(dialog) {
-  return modalStates.get(dialog) || 'idle';
+function applyReset(el) {
+  el.animate([{}, RESET_STYLES], { duration: 0, fill: 'forwards' });
 }
 
-export function setModalState(dialog, state) {
-  if (state) modalStates.set(dialog, state);
-  else modalStates.delete(dialog);
+function getState(el) {
+  return el.dataset.modalState || 'idle';
 }
 
-
-export function applyModalBaseReset(dialog) {
-  dialog.animate([
-    {
-      margin: 'auto',
-      borderWidth: '0px',
-      padding: '0px',
-      inset: '0px'
-    }
-  ], {
-    id: 'modal-reset',
-    duration: 0,
-    fill: 'forwards'
-  });
+function setState(el, state) {
+  el.dataset.modalState = state;
 }
 
-export function cancelActiveAnimations(dialog) {
-  const active = dialog.__activeAnimations || [];
-  active.forEach(anim => {
-    try { anim.cancel(); } catch (_) {}
-  });
-  dialog.__activeAnimations = [];
+function animateBackdrop(el, toOpacity, duration, delay, bg, filter) {
+  el.animate(
+    [
+      { backgroundColor: bg, backdropFilter: filter, opacity: toOpacity === 1 ? 0 : 1 },
+      { backgroundColor: bg, backdropFilter: filter, opacity: toOpacity }
+    ],
+    { pseudoElement: '::backdrop', duration, delay, fill: 'forwards', easing: 'ease' }
+  );
 }
 
+function closeModal(el, delay = 0, duration = 300, type = 'fade') {
+  if (!(el instanceof HTMLDialogElement) || !el.open) return;
+  const state = getState(el);
+  if (state === 'closing') return;
 
-export function animateModal(dialog, keyframesObj, options, onFinish) {
-  cancelActiveAnimations(dialog);
+  const preset = ANIMATIONS[type] || ANIMATIONS.none;
+  const { bg = 'rgba(0,0,0,0.5)', filter = 'none' } = el._qeBackdropStyle || {};
 
-  const opts = {
-    fill: 'forwards',
-    easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-    ...options
-  };
+  setState(el, 'closing');
+  if (el._qeFadeAnim) el._qeFadeAnim.cancel();
+  if (el._qeBackdropAnim) el._qeBackdropAnim.cancel();
 
-  const dialogAnim = dialog.animate(keyframesObj.dialog, opts);
-  const backdropAnim = dialog.animate(keyframesObj.backdrop, {
-    ...opts,
-    pseudoElement: '::backdrop'
-  });
-
-  dialog.__activeAnimations = [dialogAnim, backdropAnim];
-
-  Promise.all([dialogAnim.finished, backdropAnim.finished])
-    .then(() => {
-      dialog.__activeAnimations = [];
-      if (onFinish) onFinish();
-    })
-    .catch(() => {
-      
-    });
-
-  return { dialogAnim, backdropAnim };
-}
-
-
-export function setupModalDismiss(dialog, hideCallback) {
-  cleanupModalDismiss(dialog);
-
-  const onPointerDown = (e) => {
-    const rect = dialog.getBoundingClientRect();
-    const isInside = (
-      e.clientX >= rect.left &&
-      e.clientX <= rect.right &&
-      e.clientY >= rect.top &&
-      e.clientY <= rect.bottom
-    );
-    if (!isInside) {
-      e.preventDefault();
-      hideCallback();
-    }
-  };
-
-  const onCancel = (e) => {
-    e.preventDefault();
-    hideCallback();
-  };
-
-  dialog.addEventListener('pointerdown', onPointerDown);
-  dialog.addEventListener('cancel', onCancel);
-
-  modalListeners.set(dialog, { onPointerDown, onCancel });
-}
-
-export function cleanupModalDismiss(dialog) {
-  const listeners = modalListeners.get(dialog);
-  if (listeners) {
-    dialog.removeEventListener('pointerdown', listeners.onPointerDown);
-    dialog.removeEventListener('cancel', listeners.onCancel);
-    modalListeners.delete(dialog);
+  if (!preset.out || duration === 0) {
+    if (el.open) el.close();
+    setState(el, 'idle');
+    el.getAnimations().forEach(a => a.cancel());
+    return;
   }
+
+  el._qeBackdropAnim = el.animate(
+    [{ backgroundColor: bg, backdropFilter: filter, opacity: 1 }, { backgroundColor: bg, backdropFilter: filter, opacity: 0 }],
+    { pseudoElement: '::backdrop', duration, delay, fill: 'forwards', easing: 'ease' }
+  );
+
+  el._qeFadeAnim = el.animate([{}, preset.out[0]], { duration, delay, fill: 'forwards', easing: 'ease' });
+
+  Promise.all([
+    el._qeFadeAnim.finished,
+    el._qeBackdropAnim.finished
+  ]).then(() => {
+    if (getState(el) === 'closing') {
+      if (el.open) el.close();
+      setState(el, 'idle');
+      el.getAnimations().forEach(a => a.cancel());
+    }
+  }).catch(() => {});
 }
+
+export { ANIMATIONS, applyReset, getState, setState, animateBackdrop, closeModal };

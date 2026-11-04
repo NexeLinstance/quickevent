@@ -2,15 +2,14 @@
 
 export function cleanHtml(html) {
   if (typeof html !== 'string') return '';
-
-  // Check for Native Sanitizer API
-  if (typeof Element !== 'undefined' && Element.prototype.hasOwnProperty('setHTML')) {
-    const temp = document.createElement('div');
-    temp.setHTML(html);
-    return temp.innerHTML;
-  }
-
-  // Fail Secure for older browsers
-  console.warn('[QE Security] Your browser does not support the HTML Sanitizer API. HTML content was blocked to prevent XSS.');
-  return ''; // Return empty string, blocking the HTML
+  
+  // Warning for developers: setHtml is dangerous with user input.
+  // Only use it with trusted backend data.
+  console.warn(
+    '[QE Security] setHtml/appendHtml/prependHtml are dangerous with untrusted input. ' +
+    'Only use data from your secure backend (e.g., Vapi). ' +
+    'For user-generated content, use setText instead.'
+  );
+  
+  return html;
 }

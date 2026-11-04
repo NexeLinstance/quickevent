@@ -1,7 +1,9 @@
 // src/commands/func/callFunc.js
+import { policy } from '../../core/security.js';
 
 const FORBIDDEN_NAMES = new Set(['__proto__', 'constructor', 'prototype']);
 const VALID_NAME = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+const callDepth = new WeakMap();
 
 export default {
   name: 'callFunc',
@@ -26,7 +28,8 @@ export default {
     }
 
     const [, argSpec, body] = effects;
-    
+    if (!Array.isArray(body)) throw new Error('callFunc: invalid function body');
+
     const args = [];
     if (Array.isArray(argSpec)) {
       for (const item of argSpec) {
@@ -40,22 +43,23 @@ export default {
       }
     }
 
-    // Security: Check for forbidden names and prevent deep recursion
+    // Validate arg names
     for (const arg of args) {
       if (!VALID_NAME.test(arg.name) || FORBIDDEN_NAMES.has(arg.name)) {
-        throw new Error(`callFunc: invalid argument name "${arg.name}" (security violation)`);
+        throw new Error(`callFunc: invalid argument name "${arg.name}"`);
       }
     }
 
-    if (!ctx.vars._callDepth) ctx.vars._callDepth = 0;
-    if (ctx.vars._callDepth > 32) {
-      throw new Error('callFunc: maximum call stack depth exceeded');
+    // Check recursion depth (from WeakMap, not ctx.vars)
+    const currentDepth = (callDepth.get(ctx) || 0) + 1;
+    if (currentDepth > policy.maxCallDepth) {
+      throw new Error('callFunc: maximum call depth exceeded');
     }
-    ctx.vars._callDepth++;
+    callDepth.set(ctx, currentDepth);
 
-    // Save current state of variables to restore later (Scope isolation)
+    // Save scope
     const savedVars = new Map();
-    
+
     try {
       for (let i = 0; i < args.length; i++) {
         const argDef = args[i];
@@ -63,16 +67,13 @@ export default {
         if (val === undefined) val = argDef.default;
 
         const name = argDef.name;
-        // Save the old value (or undefined if it didn't exist)
         savedVars.set(name, Object.prototype.hasOwnProperty.call(ctx.vars, name) ? ctx.vars[name] : undefined);
-        
         ctx.vars[name] = val;
       }
 
       await runBody(body);
-
     } finally {
-      // Restore the scope
+      // Restore scope
       for (const [name, oldVal] of savedVars.entries()) {
         if (oldVal === undefined) {
           delete ctx.vars[name];
@@ -80,7 +81,9 @@ export default {
           ctx.vars[name] = oldVal;
         }
       }
-      ctx.vars._callDepth--;
+      
+      // Decrement depth
+      callDepth.set(ctx, currentDepth - 1);
     }
   },
 };
