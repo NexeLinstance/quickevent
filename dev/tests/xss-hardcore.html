@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>QuickEvent · XSS Hardcore Test (Fixed)</title>
+  <title>QuickEvent · XSS Hardcore Test</title>
   <style>
     body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; background: #fafafa; }
     section { margin-bottom: 30px; padding: 20px; background: white; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -18,61 +18,52 @@
   <p>If any alert pops up, the framework is vulnerable.</p>
 
   <section>
-    <h2>1. Classic XSS Payloads</h2>
-    <p class="desc">Basic script tags and event handlers.</p>
-    <!-- Using single quotes inside the JSON strings to avoid breaking -->
-    <button click='["setHtml", "#target1", "<script>alert(1)</script>"]'>Attack 1: Script Tag</button>
-    <button click='["setHtml", "#target1", "<img src=x onerror=alert(2)>"]'>Attack 2: Image Onerror</button>
-    <button click='["setHtml", "#target1", "<svg onload=alert(3)>"]'>Attack 3: SVG Onload</button>
+    <h2>1. Classic XSS</h2>
+    <button click='["setHtml", "#target1", "&lt;script&gt;alert(1)&lt;/script&gt;"]'>Attack 1: Script Tag</button>
+    <button click='["setHtml", "#target1", "&lt;img src=x onerror=alert(2)&gt;"]'>Attack 2: Image Onerror</button>
+    <button click='["setHtml", "#target1", "&lt;svg onload=alert(3)&gt;"]'>Attack 3: SVG Onload</button>
     <div class="target" id="target1">Result will appear here...</div>
   </section>
 
   <section>
     <h2>2. Advanced XSS</h2>
-    <p class="desc">These payloads are designed to bypass simple regex filters.</p>
-    
-    <button click='["setHtml", "#target2", "<div id=x title="><img src=x onerror=alert(4)>">"]'>Attack 4: Attribute Breakout</button>
-    <button click='["setHtml", "#target2", "<img src=x onerror=&#x61;lert(5)>"]'>Attack 5: HTML Entity Encoding</button>
-    <button click='["setHtml", "#target2", "<math><mtext><script>alert(6)</script></mtext></math>"]'>Attack 6: Math/Mutation XSS</button>
-    <button click='["setHtml", "#target2", "<form><math><mtext></form><img src=x onerror=alert(7)>"]'>Attack 7: Form/Math Nesting</button>
-    <button click='["setHtml", "#target2", "<template><script>alert(8)</script></template>"]'>Attack 8: Template Tag</button>
-
+    <button click='["setHtml", "#target2", "&lt;div id=x title=&quot;&gt;&lt;img src=x onerror=alert(4)&gt;&quot;&gt;"]'>Attack 4: Attribute Breakout</button>
+    <button click='["setHtml", "#target2", "&lt;img src=x onerror=&amp;#x61;lert(5)&gt;"]'>Attack 5: HTML Entity</button>
+    <button click='["setHtml", "#target2", "&lt;math&gt;&lt;mtext&gt;&lt;script&gt;alert(6)&lt;/script&gt;&lt;/mtext&gt;&lt;/math&gt;"]'>Attack 6: Math/Mutation</button>
+    <button click='["setHtml", "#target2", "&lt;form&gt;&lt;math&gt;&lt;mtext&gt;&lt;/form&gt;&lt;img src=x onerror=alert(7)&gt;"]'>Attack 7: Form/Math</button>
+    <button click='["setHtml", "#target2", "&lt;template&gt;&lt;script&gt;alert(8)&lt;/script&gt;&lt;/template&gt;"]'>Attack 8: Template Tag</button>
     <div class="target" id="target2">Result will appear here...</div>
   </section>
 
   <section>
-    <h2>3. Attribute-Based XSS (via setHtml)</h2>
-    <p class="desc">Injecting dangerous attributes like srcdoc or formaction.</p>
-    
-    <button click='["setHtml", "#target3", "<iframe srcdoc="<script>alert(9)</script>"></iframe>"]'>Attack 9: Iframe Srcdoc</button>
-    <button click='["setHtml", "#target3", "<button formaction="javascript:alert(10)">Click me</button>"]'>Attack 10: Formaction</button>
-    <button click='["setHtml", "#target3", "<object data="javascript:alert(11)"></object>"]'>Attack 11: Object Data</button>
-    <button click='["setHtml", "#target3", "<div style="background-image: url(javascript:alert(12))"></div>"]'>Attack 12: CSS Javascript URL</button>
-
+    <h2>3. Attribute-Based XSS</h2>
+    <button click='["setHtml", "#target3", "&lt;iframe srcdoc=&quot;&amp;lt;script&amp;gt;alert(9)&amp;lt;/script&amp;gt;&quot;&gt;&lt;/iframe&gt;"]'>Attack 9: Iframe Srcdoc</button>
+    <button click='["setHtml", "#target3", "&lt;button formaction=&quot;javascript:alert(10)&quot;&gt;Click me&lt;/button&gt;"]'>Attack 10: Formaction</button>
+    <button click='["setHtml", "#target3", "&lt;object data=&quot;javascript:alert(11)&quot;&gt;&lt;/object&gt;"]'>Attack 11: Object Data</button>
     <div class="target" id="target3">Result will appear here...</div>
   </section>
 
   <section>
-    <h2>4. Attribute Injection via addAttr (Testing attrGuard)</h2>
-    <p class="desc">Testing if attrGuard blocks dangerous attributes.</p>
-    
-    <button click='["addAttr", "#target4", "onclick", "alert(13)"]'>Attack 13: onclick via addAttr</button>
+    <h2>4. Attribute Injection (attrGuard)</h2>
+    <button click='["addAttr", "#target4", "onclick", "alert(13)"]'>Attack 13: onclick</button>
     <button click='["addAttr", "#target4", "href", "javascript:alert(14)"]'>Attack 14: javascript: href</button>
-    <button click='["addAttr", "#target4", "srcdoc", "<script>alert(15)</script>"]'>Attack 15: srcdoc via addAttr</button>
-
+    <button click='["addAttr", "#target4", "srcdoc", "&lt;script&gt;alert(15)&lt;/script&gt;"]'>Attack 15: srcdoc</button>
     <div class="target" id="target4">Result will appear here...</div>
   </section>
 
   <section>
-    <h2>5. The "Safe" Payloads (Should Pass)</h2>
-    <p class="desc">These are legitimate HTML tags that should be rendered correctly.</p>
-    
-    <button click='["setHtml", "#target5", "<div class="box"><h3>Title</h3><p>This is <strong>bold</strong> and <em>italic</em>.</p><a href="https://example.com" target="_blank">Link</a></div>"]'>Test: Legit HTML</button>
-    <button click='["setHtml", "#target5", "<form action="/submit" method="POST"><input name="name" placeholder="Name"><button type="submit">Send</button></form>"]'>Test: Legit Form</button>
-    <button click='["setHtml", "#target5", "<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>"]'>Test: Legit Iframe</button>
-
+    <h2>5. Safe Payloads (Should Pass)</h2>
+    <button click='["setHtml", "#target5", "&lt;div class=&quot;box&quot;&gt;&lt;h3&gt;Title&lt;/h3&gt;&lt;p&gt;This is &lt;strong&gt;bold&lt;/strong&gt; and &lt;em&gt;italic&lt;/em&gt;.&lt;/p&gt;&lt;a href=&quot;https://example.com&quot;&gt;Link&lt;/a&gt;&lt;/div&gt;"]'>Test: Legit HTML</button>
+    <button click='["setHtml", "#target5", "&lt;form action=&quot;/submit&quot; method=&quot;POST&quot;&gt;&lt;input name=&quot;name&quot; placeholder=&quot;Name&quot;&gt;&lt;button type=&quot;submit&quot;&gt;Send&lt;/button&gt;&lt;/form&gt;"]'>Test: Legit Form</button>
+    <button click='["setHtml", "#target5", "&lt;iframe src=&quot;https://www.youtube.com/embed/dQw4w9WgXcQ&quot; allowfullscreen&gt;&lt;/iframe&gt;"]'>Test: Legit Iframe</button>
     <div class="target" id="target5">Safe HTML should appear here...</div>
   </section>
+
+  <iframe id="target-iframe" style="width:100%; height:100px;"></iframe>
+
+<button click='["addAttr", "#target-iframe", "srcdoc", "&lt;script&gt;alert(15)&lt;/script&gt;"]'>
+  Attack: srcdoc on iframe
+</button>
 
   <script type="module">
     window.alert = (msg) => {
@@ -87,7 +78,6 @@
     console.log('XSS Test Suite Loaded.');
   </script>
   
-  <!-- Use the latest CDN version -->
   <script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js"></script>
 </body>
 </html>

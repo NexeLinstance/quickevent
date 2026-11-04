@@ -32,16 +32,14 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Force add dist even if it's in .gitignore
           git add -f dist/quickevent.min.js
           
-          # Only commit if there are changes
           if git diff --cached --quiet; then
             echo "No changes to dist, skipping commit."
           else
             git commit -m "chore: build dist for ${{ github.ref_name }}"
-            git pull --rebase origin main || git pull --rebase origin master
-            git push origin HEAD:main || git push origin HEAD:master
+            git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}.git
+            git push origin HEAD:main
           fi
 
       - name: Upload release assets
