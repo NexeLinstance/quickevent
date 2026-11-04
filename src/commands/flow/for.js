@@ -1,5 +1,6 @@
 // src/commands/flow/for.js
 import { resolveArg } from '../../core/resolver.js';
+import { safeVarName } from '../../core/security.js';
 
 export default {
   name: 'for',
@@ -13,12 +14,12 @@ export default {
       throw new Error('for: source must be an array or object');
     }
 
-    // Parse variable names
+    // Parse variable names (with security validation)
     let varNames;
     if (Array.isArray(varSpec)) {
-      varNames = varSpec.map(s => String(s).trim()).filter(Boolean);
+      varNames = varSpec.map(s => safeVarName(String(s).trim())).filter(Boolean);
     } else {
-      varNames = String(varSpec).split(',').map(s => s.trim()).filter(Boolean);
+      varNames = String(varSpec).split(',').map(s => safeVarName(s.trim())).filter(Boolean);
     }
 
     if (!varNames.length) {

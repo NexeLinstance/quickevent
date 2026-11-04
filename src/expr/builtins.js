@@ -1,8 +1,7 @@
 // src/expr/builtins.js
-// Pure functions callable from expressions. No side effects.
 
-export const BUILTINS = {
-  // Math
+export const BUILTINS = Object.freeze({
+ 
   sum:   (...a) => a.flat().reduce((s, x) => s + Number(x), 0),
   sub:   (...a) => a.flat().map(Number).reduce((s, x) => s - x),
   min:   (...a) => Math.min(...a.flat().map(Number)),
@@ -27,4 +26,4 @@ export const BUILTINS = {
   endsWith:  (s, p) => String(s).endsWith(String(p)),
   indexOf:   (s, p) => String(s).indexOf(String(p)),
   split:     (s, sep) => String(s).split(sep ?? /\s+/),
-};
+});

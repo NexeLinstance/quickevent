@@ -56,15 +56,22 @@ function evalNode(node, vars) {
   return { value: obj[key], store: null };
 }
 
-    case 'Call': {
+        case 'Call': {
       const callee = node.callee;
       if (callee.type !== 'Identifier') {
         throw new Error('Only builtin functions can be called.');
       }
+      
+      // Security: Only allow own properties of BUILTINS
+      if (!Object.prototype.hasOwnProperty.call(BUILTINS, callee.name)) {
+        throw new Error(`Unknown function: "${callee.name}"`);
+      }
+      
       const fn = BUILTINS[callee.name];
       if (typeof fn !== 'function') {
         throw new Error(`Unknown function: "${callee.name}"`);
       }
+      
       const args = node.args.map(a => evalNode(a, vars).value);
       return { value: fn(...args), store: null };
     }

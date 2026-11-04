@@ -3,7 +3,7 @@ import { policy } from '../../core/security.js';
 
 const FORBIDDEN_NAMES = new Set(['__proto__', 'constructor', 'prototype']);
 const VALID_NAME = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
-const callDepth = new WeakMap();
+const callDepth = new WeakMap(); // Key: ctx.vars
 
 export default {
   name: 'callFunc',
@@ -50,12 +50,12 @@ export default {
       }
     }
 
-    // Check recursion depth (from WeakMap, not ctx.vars)
-    const currentDepth = (callDepth.get(ctx) || 0) + 1;
+    // Check recursion depth using ctx.vars (shared across sub-contexts)
+    const currentDepth = (callDepth.get(ctx.vars) || 0) + 1;
     if (currentDepth > policy.maxCallDepth) {
       throw new Error('callFunc: maximum call depth exceeded');
     }
-    callDepth.set(ctx, currentDepth);
+    callDepth.set(ctx.vars, currentDepth);
 
     // Save scope
     const savedVars = new Map();
@@ -83,7 +83,7 @@ export default {
       }
       
       // Decrement depth
-      callDepth.set(ctx, currentDepth - 1);
+      callDepth.set(ctx.vars, currentDepth - 1);
     }
   },
 };

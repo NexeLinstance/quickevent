@@ -12,6 +12,7 @@ function flattenParams(obj, prefix = '') {
   }, {});
 }
 
+
 function injectHeadLinks(htmlString) {
   if (typeof htmlString !== 'string' || !htmlString.trim()) return;
 
@@ -29,17 +30,21 @@ function injectHeadLinks(htmlString) {
       try {
         const u = new URL(urlStr, window.location.href);
         return u.origin === window.location.origin;
-      } catch {
-        return false;
-      }
+      } catch { return false; }
     };
+
+    // Limit link rel types
+    const ALLOWED_REL = new Set(['stylesheet', 'preload', 'icon']);
 
     doc.querySelectorAll('link[href]').forEach(link => {
       const href = link.getAttribute('href');
       if (!href || existingUrls.has(href) || !isSafe(href)) return;
 
+      const rel = (link.getAttribute('rel') || 'stylesheet').toLowerCase();
+      if (!ALLOWED_REL.has(rel)) return;
+
       const newLink = document.createElement('link');
-      newLink.rel = link.getAttribute('rel') || 'stylesheet';
+      newLink.rel = rel;
       newLink.href = href;
       document.head.appendChild(newLink);
       existingUrls.add(href);
