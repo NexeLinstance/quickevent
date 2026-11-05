@@ -19,11 +19,27 @@ jobs:
         with:
           node-version: 20
 
+      - name: Debug - Check files before build
+        run: |
+          echo "=== Checking package.json ==="
+          cat package.json | grep version
+          echo "=== Checking src/quickevent.js ==="
+          cat src/quickevent.js
+          echo "=== Checking src/core/sanitize.js ==="
+          cat src/core/sanitize.js
+
       - name: Install dependencies
         run: npm install
 
       - name: Build bundle
         run: npm run build
+
+      - name: Debug - Check output file
+        run: |
+          echo "=== Searching for 'QuickEvent' in dist ==="
+          grep -o "QuickEvent.*loaded" dist/quickevent.min.js || echo "NOT FOUND!"
+          echo "=== Searching for 'purify' in dist ==="
+          grep -o "purify.min.js" dist/quickevent.min.js || echo "NOT FOUND!"
 
       - name: Copy DOMPurify to dist
         run: |
