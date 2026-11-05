@@ -7,10 +7,11 @@ export default {
   blocking: false,
   capabilities: ['dom.write', 'dom.unsafeHtml'],
   schema: ['selector', 'any', 'number?'],
-  run(ctx, [selector, html, delay = 0]) {
+  async run(ctx, [selector, html, delay = 0]) { 
+    const safeHtml = await cleanHtml(html);
     return ctx.dom.each(
       selector,
-      el => { el.insertAdjacentHTML('afterbegin', cleanHtml(html)); },
+      el => { el.insertAdjacentHTML('afterbegin', safeHtml); },
       delay
     );
   },

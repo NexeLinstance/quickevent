@@ -1,12 +1,16 @@
 // src/core/sanitize.js
-
 let purifier = null;
 
-// Start loading DOMPurify immediately when the module is imported.
 const purifyPromise = (async () => {
   try {
     const mod = await import('./lib/purify.min.js');
     purifier = mod.default || window.DOMPurify;
+    
+    purifier.setConfig({
+      FORBID_TAGS: ['base', 'style',  'iframe', 'object', 'embed'],
+      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    });
+
     console.log('[QE] DOMPurify loaded and ready.');
     return purifier;
   } catch (err) {
@@ -19,13 +23,12 @@ export async function cleanHtml(html) {
   if (typeof html !== 'string') return '';
 
   if (!purifier) {
-    // Wait for the background loading to finish
     await purifyPromise;
   }
 
   if (!purifier) {
-    console.warn('[QE] DOMPurify is not available. HTML inserted without sanitization.');
-    return html;
+    console.warn('[QE Security] DOMPurify is not available. HTML insertion blocked for safety.');
+    return ''; 
   }
 
   return purifier.sanitize(html);
