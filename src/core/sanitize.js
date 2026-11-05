@@ -1,27 +1,31 @@
 // src/core/sanitize.js
+
 let purifier = null;
+
+// Start loading DOMPurify immediately when the module is imported.
+const purifyPromise = (async () => {
+  try {
+    const mod = await import('./lib/purify.min.js');
+    purifier = mod.default || window.DOMPurify;
+    console.log('[QE] DOMPurify loaded and ready.');
+    return purifier;
+  } catch (err) {
+    console.error('[QE] Failed to load DOMPurify:', err);
+    return null;
+  }
+})();
 
 export async function cleanHtml(html) {
   if (typeof html !== 'string') return '';
 
   if (!purifier) {
-    console.log('[QE] Loading DOMPurify from ./lib/purify.min.js...');
-    try {
-      const mod = await import('./lib/purify.min.js');
-      console.log('[QE] DOMPurify module loaded:', mod);
-      
-      purifier = mod.default || window.DOMPurify;
-      
-      if (!purifier) {
-        console.error('[QE] DOMPurify loaded, but no default export or window.DOMPurify found.');
-        return html; // Fallback
-      }
-      
-      console.log('[QE] DOMPurify instance ready.');
-    } catch (err) {
-      console.error('[QE] Failed to load DOMPurify:', err);
-      return html; // Fallback
-    }
+    // Wait for the background loading to finish
+    await purifyPromise;
+  }
+
+  if (!purifier) {
+    console.warn('[QE] DOMPurify is not available. HTML inserted without sanitization.');
+    return html;
   }
 
   return purifier.sanitize(html);

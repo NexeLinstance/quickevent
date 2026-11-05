@@ -1,5 +1,6 @@
 // src/quickevent.js
 import pkg from '../package.json';
+import './core/sanitize.js'; // <--- Start loading DOMPurify immediately
 import './setup.js';
 
 console.log(
