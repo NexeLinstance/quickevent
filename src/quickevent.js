@@ -7,4 +7,4 @@ console.log(
   `%c[QuickEvent] v${version} loaded.`, 
   'color: #0f0; font-weight: bold;'
 );
-const version2 = '1.3.28';
+const version2 = '1.3.29';
