@@ -27,7 +27,7 @@
 
   <section>
     <h2>2. Advanced XSS</h2>
-    <button click='["setHtml", "#target2", "<div id=x title=&quot;><img src=x onerror=alert(4)>&quot;>"]'>Attack 4: Attribute Breakout</button>
+    <button click='["setHtml", "#target2", "<div id=x <img src=x onerror=alert(4)>"]'>Attack 4: Attribute Breakout</button>
     <button click='["setHtml", "#target2", "<img src=x onerror=&#x61;lert(5)>"]'>Attack 5: HTML Entity</button>
     <button click='["setHtml", "#target2", "<math><mtext><script>alert(6)</script></mtext></math>"]'>Attack 6: Math/Mutation</button>
     <button click='["setHtml", "#target2", "<form><math><mtext></form><img src=x onerror=alert(7)>"]'>Attack 7: Form/Math</button>
@@ -72,7 +72,7 @@
     console.log('XSS Test Suite Loaded.');
   </script>
   
-  <!-- Use the latest CDN version -->
-  <script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@01.03.21/quickevent.min.js"></script>
+  <!-- Use the correct CDN version -->
+  <script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js"></script>
 </body>
 </html>
