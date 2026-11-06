@@ -26,6 +26,14 @@ function injectHeadLinks(htmlString) {
       if (url) existingUrls.add(url);
     });
 
+    // Also track existing meta tags to avoid duplicates
+    const existingMetas = new Set();
+    document.head.querySelectorAll('meta[name], meta[property], meta[http-equiv]').forEach(node => {
+      const name = node.getAttribute('name') || node.getAttribute('property') || node.getAttribute('http-equiv');
+      const content = node.getAttribute('content');
+      if (name && content) existingMetas.add(`${name}=${content}`);
+    });
+
     const isSafe = (urlStr) => {
       try {
         const u = new URL(urlStr, window.location.href);
@@ -33,9 +41,27 @@ function injectHeadLinks(htmlString) {
       } catch { return false; }
     };
 
-    // Limit link rel types
-    const ALLOWED_REL = new Set(['stylesheet', 'preload', 'icon']);
+    // 1. Process meta tags
+    doc.querySelectorAll('meta').forEach(meta => {
+      const name = meta.getAttribute('name') || meta.getAttribute('property') || meta.getAttribute('http-equiv');
+      const content = meta.getAttribute('content');
+      if (!name || !content) return;
 
+      const key = `${name}=${content}`;
+      if (existingMetas.has(key)) return;
+
+      const newMeta = document.createElement('meta');
+      if (meta.hasAttribute('name')) newMeta.setAttribute('name', name);
+      if (meta.hasAttribute('property')) newMeta.setAttribute('property', name);
+      if (meta.hasAttribute('http-equiv')) newMeta.setAttribute('http-equiv', name);
+      newMeta.setAttribute('content', content);
+      
+      document.head.appendChild(newMeta);
+      existingMetas.add(key);
+    });
+
+    // 2. Process links
+    const ALLOWED_REL = new Set(['stylesheet', 'preload', 'icon']);
     doc.querySelectorAll('link[href]').forEach(link => {
       const href = link.getAttribute('href');
       if (!href || existingUrls.has(href) || !isSafe(href)) return;
@@ -50,6 +76,7 @@ function injectHeadLinks(htmlString) {
       existingUrls.add(href);
     });
 
+    // 3. Process scripts
     doc.querySelectorAll('script[src]').forEach(script => {
       const src = script.getAttribute('src');
       if (!src || existingUrls.has(src) || !isSafe(src)) return;
