@@ -22,7 +22,7 @@ export default {
       expires: 0,
       path: '/',
       domain: '',
-      secure: false,
+      secure: true,
       samesite: 'lax',
       partitioned: false,
       ...options
