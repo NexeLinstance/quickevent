@@ -1,0 +1,132 @@
+/* =========================================
+   QuickEvent Collapse Markers
+   ========================================= */
+
+/* --- Base Setup --- */
+summary[class*="marker-"] {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+  gap: 12px; /* Creates space between the text and the marker */
+}
+
+/* Hide default marker for all browsers */
+summary[class*="marker-"]::-webkit-details-marker { 
+  display: none; 
+}
+summary[class*="marker-"]::marker {
+  display: none;
+  content: '';
+}
+
+summary[class*="marker-"]::before,
+summary[class*="marker-"]::after {
+  content: '';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5em;
+  height: 1.5em;
+  font-size: 1.2em;
+  line-height: 1;
+  transition: transform 0.3s ease, content 0.3s ease;
+  flex-shrink: 0;
+  /* Small padding to prevent the emoji from touching the text */
+  padding: 0.1em; 
+}
+
+/* --- Positions --- */
+/* Default: Start (before) */
+summary[class*="marker-"]:not([class*="marker-end"])::before { 
+  display: inline-flex; 
+}
+summary[class*="marker-"]:not([class*="marker-end"])::after { 
+  display: none; 
+}
+
+/* End (after) */
+summary[class*="marker-end"]::before { 
+  display: none; 
+}
+summary[class*="marker-end"]::after { 
+  display: inline-flex; 
+  margin-left: auto; /* Pushes the marker to the far right */
+}
+
+/* =========================================
+   Marker Pairs (Closed / Open)
+   ========================================= */
+
+
+/* --- Plus / Minus --- */
+summary.marker-plus::before, summary.marker-plus::after { content: '＋'; font-size: 1em; }
+.qe-collapse-open summary.marker-plus::before, .qe-collapse-open summary.marker-plus::after { content: '－'; }
+
+/* --- Chevron (Right / Down) --- */
+summary.marker-chevron::before, summary.marker-chevron::after { content: '›'; font-size: 1.5em; line-height: 0.8; }
+.qe-collapse-open summary.marker-chevron::before, .qe-collapse-open summary.marker-chevron::after { transform: rotate(90deg); }
+
+/* --- Caret (Down / Up) --- */
+summary.marker-caret::before, summary.marker-caret::after { content: '▾'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-caret::before, .qe-collapse-open summary.marker-caret::after { content: '▴'; }
+
+/* --- Arrow (Right / Down) --- */
+summary.marker-arrow::before, summary.marker-arrow::after { content: '→'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-arrow::before, .qe-collapse-open summary.marker-arrow::after { transform: rotate(90deg); }
+
+/* --- Circle (Empty / Filled) --- */
+summary.marker-circle::before, summary.marker-circle::after { content: '○'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-circle::before, .qe-collapse-open summary.marker-circle::after { content: '●'; }
+
+/* --- Triangle (Down / Up) --- */
+summary.marker-triangle::before, summary.marker-triangle::after { content: '▽'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-triangle::before, .qe-collapse-open summary.marker-triangle::after { content: '△'; }
+
+/* --- Square (Empty / Filled) --- */
+summary.marker-square::before, summary.marker-square::after { content: '□'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-square::before, .qe-collapse-open summary.marker-square::after { content: '■'; }
+
+/* --- Diamond (Empty / Filled) --- */
+summary.marker-diamond::before, summary.marker-diamond::after { content: '◇'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-diamond::before, .qe-collapse-open summary.marker-diamond::after { content: '◆'; }
+
+/* --- Check / Cross (Text) --- */
+summary.marker-check::before, summary.marker-check::after { content: '+'; font-size: 1.5em; font-weight: 300; }
+.qe-collapse-open summary.marker-check::before, .qe-collapse-open summary.marker-check::after { content: '×'; }
+
+/* --- Star (Empty / Filled) --- */
+summary.marker-star::before, summary.marker-star::after { content: '☆'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-star::before, .qe-collapse-open summary.marker-star::after { content: '★'; }
+
+/* --- Heart (Empty / Filled) --- */
+summary.marker-heart::before, summary.marker-heart::after { content: '♡'; font-size: 1.2em; }
+.qe-collapse-open summary.marker-heart::before, .qe-collapse-open summary.marker-heart::after { content: '♥'; }
+
+/* --- Help / Info --- */
+summary.marker-help::before, summary.marker-help::after { content: '?'; font-size: 1.2em; font-weight: bold; }
+.qe-collapse-open summary.marker-help::before, .qe-collapse-open summary.marker-help::after { content: '!'; }
+
+/* --- Warning --- */
+summary.marker-warning::before, summary.marker-warning::after { content: '!'; font-size: 1.2em; font-weight: bold; }
+.qe-collapse-open summary.marker-warning::before, .qe-collapse-open summary.marker-warning::after { content: '⚠'; }
+
+/* --- Lock / Unlock --- */
+summary.marker-lock::before, summary.marker-lock::after { content: '🔒'; filter: grayscale(1); opacity: 0.6; }
+.qe-collapse-open summary.marker-lock::before, .qe-collapse-open summary.marker-lock::after { content: '🔓'; filter: grayscale(0); opacity: 1; }
+
+/* --- Eye (Closed / Open) --- */
+summary.marker-eye::before, summary.marker-eye::after { content: '◉'; opacity: 0.4; font-size: 1.2em; }
+.qe-collapse-open summary.marker-eye::before, .qe-collapse-open summary.marker-eye::after { opacity: 1; }
+
+/* --- Folder --- */
+summary.marker-folder::before, summary.marker-folder::after { content: '📁'; filter: grayscale(1); opacity: 0.6; }
+.qe-collapse-open summary.marker-folder::before, .qe-collapse-open summary.marker-folder::after { content: '📂'; filter: grayscale(0); opacity: 1; }
+
+/* --- Document/File --- */
+summary.marker-doc::before, summary.marker-doc::after { content: '📄'; filter: grayscale(1); opacity: 0.6; }
+.qe-collapse-open summary.marker-doc::before, .qe-collapse-open summary.marker-doc::after { content: '📝'; filter: grayscale(0); opacity: 1; }
+
+/* --- Moon / Sun (Theme) --- */
+summary.marker-theme::before, summary.marker-theme::after { content: '☾'; font-size: 1.3em; }
+.qe-collapse-open summary.marker-theme::before, .qe-collapse-open summary.marker-theme::after { content: '☀'; }

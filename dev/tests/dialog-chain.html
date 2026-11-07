@@ -1,0 +1,83 @@
+<!DOCTYPE html/>
+<html>
+    <head>
+        <meta charset='UTF-8'/>
+        <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+        <title>QuickEvent · Ultimate XSS Test</title>
+        <link rel='icon' href='/nexel_venv/static/img/nexel-logo.png' type='image/png'/>
+        
+        <link href='https://cdn.jsdelivr.net/npm/bootstrap@6.0.0-alpha.1/dist/css/bootstrap.min.css' rel='stylesheet'/>
+    </head>
+    <body>
+        <div class='container'>
+            <h1>navbar test</h1>
+            <button class='btn mx-2' mouseenter='[&quot;showDialog&quot;, [&quot;#ithem1&quot;, &quot;center-top&quot;, 0, 5, false], [&quot;this&quot;, &quot;center-bottom&quot;], 0, 50]' >item 1</button>
+            <dialog id='ithem1' chain="navbar">
+                <div class='bg-danger p-5 rounded'>
+                    <p>this is col1 of item1</p>
+                    <p>this is col2 of item1</p>
+                    <p>this is col3 of item1</p>
+                    <p>this is col4 of item1</p>
+                    <p>this is col5 of item1</p>
+                    <p>this is col6 of item1</p>
+                </div>
+            </dialog>
+            <button class='btn mx-2' mouseenter='[&quot;showDialog&quot;, [&quot;#ithem2&quot;, &quot;center-top&quot;, 0, 5, false], [&quot;this&quot;, &quot;center-bottom&quot;], 0, 50]'>item 2</button>
+            <dialog id='ithem2' chain="navbar">
+                <div class='bg-danger p-5 rounded'>
+                    <p>this is col1 of item2</p>
+                    <p>this is col2 of item2</p>
+                    <p>this is col3 of item2</p>
+                    <p>this is col4 of item2</p>
+                    <p>this is col5 of item2</p>
+                    <p>this is col6 of item2</p>
+                </div>
+            </dialog>
+            <button class='btn mx-2' mouseenter='[&quot;showDialog&quot;, [&quot;#ithem3&quot;, &quot;center-top&quot;, 0, 5, false], [&quot;this&quot;, &quot;center-bottom&quot;], 0, 50]' mouseleave='[&quot;hideDialog&quot;, &quot;#ithem3&quot;]'>item 3</button>
+            <dialog id='ithem3' chain="navbar">
+                <div class='bg-danger p-5 rounded'>
+                    <p>this is col1 of item3</p>
+                    <p>this is col2 of item3</p>
+                    <p>this is col3 of item3</p>
+                    <p>this is col4 of item3</p>
+                    <p>this is col5 of item3</p>
+                    <p>this is col6 of item3</p>
+                </div>
+            </dialog>
+            <button class='btn mx-2' mouseenter='[&quot;showDialog&quot;, [&quot;#ithem4&quot;, &quot;center-top&quot;, 0, 5, false], [&quot;this&quot;, &quot;center-bottom&quot;], 0, 50]' mouseleave='[&quot;hideDialog&quot;, &quot;#ithem4&quot;]'>item 4</button>
+            <dialog id='ithem4' chain="navbar">
+                <div class='bg-danger p-5 rounded'>
+                    <p>this is col1 of item4</p>
+                    <p>this is col2 of item4</p>
+                    <p>this is col3 of item4</p>
+                    <p>this is col4 of item4</p>
+                    <p>this is col5 of item4</p>
+                    <p>this is col6 of item4</p>
+                </div>
+            </dialog>
+            <button class='btn mx-2' mouseenter='[&quot;showDialog&quot;, [&quot;#ithem5&quot;, &quot;center-top&quot;, 0, 5, false], [&quot;this&quot;, &quot;center-bottom&quot;], 0, 50]' mouseleave='[&quot;hideDialog&quot;, &quot;#ithem5&quot;]'>item 5</button>
+            <dialog id='ithem5' chain="navbar">
+                <div class='bg-danger p-5 rounded'>
+                    <p>this is col1 of item5</p>
+                    <p>this is col2 of item5</p>
+                    <p>this is col3 of item5</p>
+                    <p>this is col4 of item5</p>
+                    <p>this is col5 of item5</p>
+                    <p>this is col6 of item5</p>
+                </div>
+            </dialog>
+            <button class='btn mx-2' mouseenter='[&quot;showDialog&quot;, [&quot;#ithem6&quot;, &quot;center-top&quot;, 0, 5, false], [&quot;this&quot;, &quot;center-bottom&quot;], 0, 50]' mouseleave='[&quot;hideDialog&quot;, &quot;#ithem6&quot;]'>item 6</button>
+            <dialog id='ithem6' chain="navbar">
+                <div class='bg-danger p-5 rounded'>
+                    <p>this is col1 of item6</p>
+                    <p>this is col2 of item6</p>
+                    <p>this is col3 of item6</p>
+                    <p>this is col4 of item6</p>
+                    <p>this is col5 of item6</p>
+                    <p>this is col6 of item6</p>
+                </div>
+            </dialog>
+        </div>
+        <script type="module" src="./setup.js"></script>
+    </body>
+</html>

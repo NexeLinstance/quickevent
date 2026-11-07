@@ -8,7 +8,6 @@ function getDialogState(dialog) {
   return dialog.dataset.dialogState || 'idle';
 }
 
-// Same animation logic as in showDialog
 function runFadeAnimation(dialog, targetOpacity, duration, onEnd) {
   const currentOpacity = parseFloat(window.getComputedStyle(dialog).opacity) || 0;
 
@@ -26,7 +25,8 @@ function runFadeAnimation(dialog, targetOpacity, duration, onEnd) {
   dialog.__currentAnimation = anim;
 
   anim.onfinish = () => {
-    dialog.style.opacity = String(targetOpacity);
+    // Persist final state using WAAPI instead of inline style
+    dialog.animate([{ opacity: targetOpacity }, { opacity: targetOpacity }], { duration: 0, fill: 'forwards' });
     anim.cancel();
     dialog.__currentAnimation = null;
     setDialogState(dialog, 'idle');
@@ -34,18 +34,17 @@ function runFadeAnimation(dialog, targetOpacity, duration, onEnd) {
   };
 }
 
-// Same fadeOut logic as in showDialog
 function fadeOut(dialog, duration, onFinish) {
   setDialogState(dialog, 'hiding');
 
   runFadeAnimation(dialog, 0, duration, () => {
-    dialog.style.opacity = '';
+    // Clear all animations instead of dialog.style.opacity = ''
+    dialog.getAnimations().forEach(a => a.cancel());
     if (dialog.open) dialog.close();
     if (onFinish) onFinish();
   });
 }
 
-// Same unbind logic as in showDialog
 function unbindAutoHide(dialog) {
   if (dialog.__autoHideListener) {
     window.removeEventListener('pointerdown', dialog.__autoHideListener, true);
@@ -63,16 +62,9 @@ export default {
     if (!dialog || !dialog.open) return;
 
     const currentState = getDialogState(dialog);
-    
-    // If it's already hiding or idle (and not open), do nothing
     if (currentState === 'hiding') return;
 
-    // 1. Remove the click-outside listener immediately so it doesn't interfere
     unbindAutoHide(dialog);
-
-    // 2. Run the fade-out animation (same function from showDialog)
-    fadeOut(dialog, duration, () => {
-      // Optional: any cleanup after fully hidden
-    });
+    fadeOut(dialog, duration, () => {});
   },
 };

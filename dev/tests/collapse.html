@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Final Collapse Test</title>
+  
+  <!-- 1. Load Markers CSS from LOCAL -->
+  <link rel="stylesheet" href="../../src/assets/quickevent-markers.css">
+  
+  <style>
+    /* Reset and Base Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+      max-width: 800px; 
+      margin: 40px auto; 
+      padding: 0 20px; 
+      line-height: 1.6; 
+      background-color: #f8f9fa; 
+      color: #212529;
+    }
+
+    h1 { text-align: center; font-weight: 600; margin-bottom: 40px; color: #343a40; }
+
+    section { 
+      margin-bottom: 30px; 
+      padding: 24px; 
+      background: #ffffff; 
+      border-radius: 8px; 
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border: 1px solid #dee2e6;
+    }
+
+    h2 { 
+      margin-top: 0; 
+      color: #0d6efd; 
+      font-size: 1.25rem; 
+      border-bottom: 1px solid #dee2e6; 
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+
+    p.desc { color: #6c757d; font-size: 0.9rem; margin-bottom: 20px; }
+
+    button { 
+      margin: 4px 4px 4px 0; 
+      padding: 8px 16px; 
+      cursor: pointer; 
+      background: #ffffff; 
+      border: 1px solid #ced4da; 
+      color: #495057; 
+      border-radius: 4px; 
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    button:hover { background: #e9ecef; border-color: #adb5bd; }
+    button.primary { background: #0d6efd; color: white; border-color: #0d6efd; }
+    button.primary:hover { background: #0b5ed7; }
+
+    /* --- Collapse Specific Styles --- */
+    details { 
+      background: #f8f9fa; 
+      border: 1px solid #dee2e6; 
+      border-radius: 6px; 
+      margin-bottom: 12px; 
+      transition: border-color 0.2s;
+    }
+    details:hover { border-color: #adb5bd; }
+    
+    summary { 
+      padding: 16px; 
+      font-weight: 500; 
+      user-select: none;
+      cursor: pointer;
+    }
+
+    /* Important: Clear margins for content inside */
+    details > p, details > div.qe-collapse-wrapper > p { 
+      padding: 0 16px 16px 16px; 
+      margin: 0; 
+      color: #6c757d;
+    }
+    
+    /* Color the markers to match primary */
+    summary[class*="marker-"]::before, 
+    summary[class*="marker-"]::after {
+      color: #0d6efd;
+      font-weight: 600;
+    }
+
+    /* Grid for layout */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  </style>
+</head>
+<body>
+  <h1>QuickEvent · Final Collapse Test</h1>
+
+  <!-- 1. Basic Toggle -->
+  <section>
+    <h2>1. Direct Click (Toggle)</h2>
+    <p class="desc">Click the summary to toggle. The animation speed is 500ms.</p>
+    
+    <details>
+      <summary click='["collapse", 0, 500]' class="marker-plus">Click me to open/close</summary>
+      <p>This is the content of the first collapse. It should open and close smoothly.</p>
+    </details>
+  </section>
+
+  <!-- 2. External Control -->
+  <section>
+    <h2>2. External Control</h2>
+    <p class="desc">Use buttons to control the collapse below from outside.</p>
+    
+    <div style="margin-bottom: 16px;">
+      <button click='["showCollapse", "#collapse-2", 0, 800]' class="primary">Open (Show)</button>
+      <button click='["hideCollapse", "#collapse-2", 0, 800]'>Close (Hide)</button>
+      <button click='["toggleCollapse", "#collapse-2", 0, 800]'>Toggle</button>
+    </div>
+
+    <details id="collapse-2">
+      <summary class="marker-chevron">Controlled by external buttons</summary>
+      <p>This content is controlled from outside using the buttons above.</p>
+    </details>
+  </section>
+
+  <!-- 3. Accordion -->
+  <section>
+    <h2>3. Accordion Behavior (Grouped)</h2>
+    <p class="desc">Click on one to close the others (Accordion attribute).</p>
+    
+    <details>
+      <summary accordion="faq" click='["collapse", 0, 400]' class="marker-caret">Question 1</summary>
+      <p>Answer 1</p>
+    </details>
+
+    <details>
+      <summary accordion="faq" click='["collapse", 0, 400]' class="marker-caret">Question 2</summary>
+      <p>Answer 2</p>
+    </details>
+
+    <details>
+      <summary accordion="faq" click='["collapse", 0, 400]' class="marker-caret">Question 3</summary>
+      <p>Answer 3</p>
+    </details>
+  </section>
+
+  <!-- 4. All Elegant Markers (Start) -->
+  <section>
+    <h2>4. Elegant Markers (Start)</h2>
+    <p class="desc">Monochrome markers that match your text color.</p>
+    
+    <div class="grid">
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-plus">Plus / Minus</summary>
+        <p>Content for Plus / Minus</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-chevron">Chevron (Right / Down)</summary>
+        <p>Content for Chevron</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-caret">Caret (Down / Up)</summary>
+        <p>Content for Caret</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-arrow">Arrow (Right / Down)</summary>
+        <p>Content for Arrow</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-circle">Circle (Empty / Filled)</summary>
+        <p>Content for Circle</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-triangle">Triangle (Down / Up)</summary>
+        <p>Content for Triangle</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-square">Square (Empty / Filled)</summary>
+        <p>Content for Square</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-diamond">Diamond (Empty / Filled)</summary>
+        <p>Content for Diamond</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-check">Check / Cross</summary>
+        <p>Content for Check / Cross</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-star">Star (Empty / Filled)</summary>
+        <p>Content for Star</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-heart">Heart (Empty / Filled)</summary>
+        <p>Content for Heart</p>
+      </details>
+
+      <details>
+        <summary click='["collapse", 0, 300]' class="marker-help">Help / Info</summary>
+        <p>Content for Help</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- 5. End Position -->
+  <section>
+    <h2>5. End Position</h2>
+    <p class="desc">Markers pushed to the far right using <code>marker-end</code>.</p>
+    
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-chevron marker-end">Chevron at End</summary>
+      <p>Content for Chevron at End</p>
+    </details>
+
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-caret marker-end">Caret at End</summary>
+      <p>Content for Caret at End</p>
+    </details>
+
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-plus marker-end">Plus at End</summary>
+      <p>Content for Plus at End</p>
+    </details>
+  </section>
+
+  <!-- 6. Subtle Emojis (Grayscale) -->
+  <section>
+    <h2>6. Subtle Emojis (Grayscale)</h2>
+    <p class="desc">Using CSS filters to make colorful emojis match the theme.</p>
+    
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-lock">Lock / Unlock</summary>
+      <p>Content for Lock</p>
+    </details>
+
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-folder">Folder / Open</summary>
+      <p>Content for Folder</p>
+    </details>
+
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-doc">Document / Edit</summary>
+      <p>Content for Document</p>
+    </details>
+
+    <details>
+      <summary click='["collapse", 0, 300]' class="marker-theme">Moon / Sun</summary>
+      <p>Content for Theme</p>
+    </details>
+  </section>
+
+  <!-- Load QuickEvent from local setup -->
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

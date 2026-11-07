@@ -1089,62 +1089,103 @@ with x.dialog(id="modal"):
 
 ## Collapse
 
-دستور `collapse` در کوییک ایونت برای ساخت ویجت‌های بازوبسته‌شو (collapsible) به کار می‌رود؛ الگویی که در وب با نام Disclosure Widget شناخته می‌شود. این کامند روی جفت تگ‌های بومی HTML یعنی `details` و `summary` سوار می‌شود: تگ details ظرف محتوا و summary عنوان همیشه‌نمایان آن است. با کلیک یا tap روی summary، ویژگی open تگ details تغییر می‌کند و بقیهٔ محتوا نمایان یا پنهان می‌شود. این رفتار پایه‌ای را مرورگر بدون جاوااسکریپت ارائه می‌کند. کامند collapse آن را با انیمیشن fade تکمیل می‌کند.
+دستور collapse در کوییک ایونت برای ساخت ویجت‌های بازوبسته‌شو (Collapsible) به کار می‌رود؛ الگویی که در وب با نام Disclosure Widget شناخته می‌شود. این کامند روی جفت تگ‌های بومی HTML یعنی details و summary سوار می‌شود.
 
-این الگو برای FAQ، آکاردئون، منوهای تاشو و نمایش جزئیات اختیاری در فرم‌ها مناسب است. کامند دو مقدار می‌گیرد: delay (تأخیر شروع اجرا) و duration (طول ترانزیشن).
+ کوییک ایونت رفتار پیش‌فرض مرورگر را بلاک می‌کند و باز و بسته شدن را با انیمیشن نرم (بدون پرش و با محاسبه دقیق ارتفاع) انجام می‌دهد.
 
-### سینتکس و مثال
 
-الگوی استاندارد، قرار دادن کامند collapse روی تگ summary است؛ زیرا summary اولین فرزند details و نقطهٔ تعامل بومی کاربر است.
+
+
+ ## کامندهای کنترل کولپس
+ برای انعطاف‌پذیری بیشتر، سه کامند برای کنترل کولپس وجود دارد:
+
+ ```python
+ ["collapse", delay, duration]      # باز/بسته کردن (Toggle)
+["showCollapse", selector, delay, duration] # همیشه باز کند
+["hideCollapse", selector, delay, duration] # همیشه ببندد
+["toggleCollapse", selector, delay, duration] # از بیرون باز/بسته کند
+```
+کولپس: روی تگ summary قرار می‌گیرد و با کلیک کاربر، آن را باز یا بسته می‌کند.
+
+showCollapse / hideCollapse / toggleCollapse: <br>
+این کامندها یک سلکتور می‌گیرند و می‌توانند کولپس را از بیرون (مثلاً با یک دکمه) کنترل کنند.
 
 ```python
-with x.details():
-   x.summary("collapse title", Class="marker-none", click=["collapse", 0, 1000])
-   x.p("collapse body")
+with x.details(id="my-details"):
+   x.summary("Title")
+   x.p("Hidden content")
+
+x.button("Open", click=["showCollapse", "#my-details", 0, 300])
+x.button("Close", click=["hideCollapse", "#my-details", 0, 300])
+x.button("Toggle", click=["toggleCollapse", "#my-details", 0, 300])
 ```
+💡 نکته : در طول اجرای انیمیشن (به اندازه‌ی دیوریشن)، کولپس قفل می‌شود و کلیک‌های جدید نادیده گرفته می‌شوند تا از بهم ریختگی و پرش جلوگیری شود.
+## مارکرهای آماده (Markers CSS)
+برای اینکه کاربران بدون نوشتن حتی یک خط CSS، مارکرهای زیبا و حرفه‌ای داشته باشند، یک فایل CSS جداگانه به نام quickevent-markers.css ارائه شده است. این فایل باید در تگ head صفحه لود شود.
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css">
+```
+پس از لود این فایل، می‌توانید با اضافه کردن کلاس‌ها به تگ summary، ظاهر مارکر را تغییر دهید:
+اگه از نکسل پای استفاده میکنید نیازی به اضافه کردن فایل استایل ندارید اینکار اتوماتیک انجام میشود
 
-ساختار کامند:
+### مارکرهای تک‌رنگ (مینیمال)
+این مارکرها با رنگ متن هماهنگ می‌شوند و برای طراحی‌های مدرن مناسب‌اند:
 
-- ایندکس 0: نام کامند (`collapse`).
-- ایندکس 1: delay؛ تأخیر اجرای انیمیشن. مقدار 0 یعنی بدون تأخیر.
-- ایندکس 2: duration؛ مدت ترانزیشن برحسب میلی‌ثانیه. مقدار 1000 یعنی یک ثانیه.
+marker-plus: علامت + / -
 
-تگ details به‌صورت پیش‌فرض بسته است و فقط عنوان summary دیده می‌شود. بدنه پس از کلیک با انیمیشن نمایان می‌شود. کلیک روی summary وضعیت open را toggle می‌کند؛ پس یک کامند هم برای باز و هم برای بسته‌کردن کافی است.
+marker-chevron: فلش › / ˅
 
-### کلاس marker-none
+marker-caret: مثلث ▾ / ▴
 
-در مثال، کلاس `marker-none` نشانگر پیش‌فرض مرورگر را حذف می‌کند؛ همان مثلثی که در ابتدای summary نمایش داده می‌شود. summary از شبه‌المان `::marker` پشتیبانی می‌کند. این کلاس همراه کوییک ایونت در دسترس است و نیازی به تعریف جداگانه در CSS پروژه ندارد.
+marker-arrow: فلش ← / ↓
 
-اگر نشانگر را حذف می‌کنید، بهتر است جایگزینی مانند آیکون یا فلش دلخواه با `::before` قرار دهید تا کاربران از قابلیت بازوبسته‌شدن آگاه باشند و دسترسی‌پذیری ویجت حفظ شود.
+marker-circle: دایره ○ / ●
 
-### نکات کاربردی
+marker-triangle: مثلث ▽ / △
 
-- کامند را روی summary بگذارید، نه details.
-- چون summary وضعیت را toggle می‌کند، یک کامند collapse کافی است و باز و بسته شدن با همان delay و duration انیمیت می‌شود.
-- برای چند بخش مستقل، چند details بسازید و روی هر summary کامند collapse بگذارید.
-- برای رفتار آکاردئونی که با باز شدن یک مورد، موارد هم‌نام بسته شوند، از اتریبیوت accordion در بخش بعد استفاده کنید.
-- collapse استایل پیش‌فرض details را پاک نمی‌کند و رفتار بومی آن را حفظ می‌کند.
+marker-square: مربع □ / ■
 
----
+marker-diamond: لوزی ◇ / ◆
+
+marker-star: ستاره ☆ / ★
+
+marker-heart: قلب ♡ / ♥
+
+marker-check: علامت + / ×
+
+### مارکرهای ایموجی (با فیلتر Grayscale)
+برای استفاده از ایموجی‌های رنگی بدون اینکه ظاهر صفحه را شلوغ کنند، از این مارکرها استفاده کنید. زمانی که کولپس بسته است، ایموجی خاکستری و محو است و زمانی که باز می‌شود، رنگی می‌شود:
+
+marker-lock: قفل 🔒 / قفل باز 🔓
+
+marker-folder: پوشه بسته 📁 / پوشه باز 📂
+
+marker-doc: سند 📄 / ویرایش 📝
+
+marker-theme: ماه ☾ / خورشید ☀
+
+### موقعیت مارکر (Positions)
+
+به طور پیش‌فرض، مارکر در سمت شروع (چپ) قرار می‌گیرد. برای انتقال آن به پایان (راست)، کلاس marker-end را اضافه کنید:
+
+marker-start (پیش‌فرض)
+
+marker-end
 
 ## Accordion
-
-برای اتصال collapseها و ایجاد آکاردئون، از اتریبیوت `accordion` در تگ‌های summary استفاده کنید. وقتی value این اتریبیوت یکسان باشد، کوییک ایونت بخش‌های هم‌نام را پیدا می‌کند و پیش از باز کردن یک collapse بررسی می‌کند که collapse دیگری با همان نام باز نباشد؛ در صورت باز بودن، آن مورد بسته می‌شود.
+برای اتصال چند کولپس به یکدیگر و ایجاد رفتار آکاردئون (با باز شدن یک بخش، بقیه بخش‌های هم‌نام بسته شوند)، از اتریبیوت accordion روی تگ‌های summary استفاده کنید. وقتی مقدار این اتریبیوت در چند کولپس یکسان باشد، QuickEvent آن‌ها را هم‌گروه در نظر می‌گیرد.
 
 ```python
 with x.details():
-   x.summary("question1", accordion="FAQ", click=["collapse", 0, 1000])
+   x.summary("question1", accordion="FAQ", click=["collapse", 0, 400], Class="marker-caret")
    x.p("answer1")
 with x.details():
-   x.summary("question2", accordion="FAQ", click=["collapse", 0, 1000])
+   x.summary("question2", accordion="FAQ", click=["collapse", 0, 400], Class="marker-caret")
    x.p("answer2")
 with x.details():
-   x.summary("question3", accordion="FAQ", click=["collapse", 0, 1000])
+   x.summary("question3", accordion="FAQ", click=["collapse", 0, 400], Class="marker-caret")
    x.p("answer3")
 ```
-
-اتریبیوت accordion روی تگ summary نوشته می‌شود. برای ساخت چند گروه مستقل، برای هر گروه value متفاوتی در نظر بگیرید.
-
-
+💡 برای ساخت چند گروه مستقل، برای هر گروه یک مقدار متفاوت (مثلاً accordion="FAQ1" و accordion="FAQ2") در نظر بگیرید.
 
 *پایان مستندات QuickEvent*

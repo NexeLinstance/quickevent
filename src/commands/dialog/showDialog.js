@@ -9,14 +9,15 @@ function getDialogState(dialog) {
 }
 
 function resetDialogStyles(dialog) {
-  dialog.style.backgroundColor = 'transparent';
-  dialog.style.border = 'none';
-  dialog.style.margin = '0';
-  dialog.style.padding = '0';
-  dialog.style.outline = 'none';
-  dialog.style.boxShadow = 'none';
+  dialog.animate([{}, {
+    backgroundColor: 'transparent',
+    border: 'none',
+    margin: '0px',
+    padding: '0px',
+    outline: 'none',
+    boxShadow: 'none'
+  }], { duration: 0, fill: 'forwards' });
 }
-
 
 function positionDialog(dialog, dialogConfig, anchorConfig) {
   const [, posStr, offsetX, offsetY] = dialogConfig;
@@ -51,21 +52,21 @@ function positionDialog(dialog, dialogConfig, anchorConfig) {
   let finalX = x;
   let finalY = y;
 
+  // WAAPI for position instead of inline styles
   if (isBodyOrViewport) {
-    if (anchorSelector === 'body') {
-      dialog.style.position = 'absolute';
-    } else {
-      dialog.style.position = 'fixed';
-    }
+    dialog.animate([{}, { position: anchorSelector === 'body' ? 'absolute' : 'fixed' }], { duration: 0, fill: 'forwards' });
   } else {
     finalX = x + window.scrollX;
     finalY = y + window.scrollY;
-    dialog.style.position = 'absolute';
+    dialog.animate([{}, { position: 'absolute' }], { duration: 0, fill: 'forwards' });
   }
 
-  dialog.style.left = '0';
-  dialog.style.top = '0';
-  dialog.style.bottom = 'auto';
+  // WAAPI for left, top, bottom instead of inline styles
+  dialog.animate([{}, {
+    left: '0px',
+    top: '0px',
+    bottom: 'auto'
+  }], { duration: 0, fill: 'forwards' });
 
   dialog.animate([{ 
     transform: `translate(calc(${finalX}px + ${offX}px), calc(${finalY}px + ${offY}px))` 
@@ -92,7 +93,8 @@ function runFadeAnimation(dialog, targetOpacity, duration, onEnd) {
   dialog.__currentAnimation = anim;
 
   anim.onfinish = () => {
-    dialog.style.opacity = String(targetOpacity);
+    // Persist final state using WAAPI instead of inline style
+    dialog.animate([{ opacity: targetOpacity }, { opacity: targetOpacity }], { duration: 0, fill: 'forwards' });
     anim.cancel();
     dialog.__currentAnimation = null;
     setDialogState(dialog, 'idle');
@@ -104,7 +106,8 @@ function fadeIn(dialog, dialogConfig, anchorConfig, duration) {
   resetDialogStyles(dialog);
   
   if (!dialog.open) {
-    dialog.style.opacity = '0';
+    // WAAPI for initial opacity 0 instead of inline style
+    dialog.animate([{ opacity: 0 }, { opacity: 0 }], { duration: 0, fill: 'forwards' });
     dialog.show(); 
   }
 
@@ -120,15 +123,14 @@ function fadeOut(dialog, duration, onFinish) {
   setDialogState(dialog, 'hiding');
 
   runFadeAnimation(dialog, 0, duration, () => {
-    dialog.style.opacity = '';
+    // Clear all animations (equivalent to dialog.style.opacity = '')
+    dialog.getAnimations().forEach(a => a.cancel());
     dialog.close();
     if (onFinish) onFinish();
   });
 }
 
-// 3. Fix click outside logic to work correctly with absolute/fixed positioning
 function isClickOutside(dialog, event) {
-  // اگر کلیک روی خود دیالوگ یا فرزندانش باشد، یعنی داخل است
   if (dialog.contains(event.target)) return false;
   return true;
 }
@@ -138,8 +140,6 @@ function bindAutoHide(dialog, duration) {
 
   const handler = (event) => {
     if (getDialogState(dialog) === 'hiding') return;
-    
-    // از تابع اصلاح شده استفاده می‌کند
     if (isClickOutside(dialog, event)) {
       unbindAutoHide(dialog);
       fadeOut(dialog, duration);
@@ -160,11 +160,24 @@ function unbindAutoHide(dialog) {
     delete dialog.__autoHideListener;
   }
 }
+// NEW: Function to close other dialogs in the same chain
+function closeChainedDialogs(dialog, duration) {
+  const chainValue = dialog.getAttribute('chain');
+  if (!chainValue) return;
+
+  document.querySelectorAll(`dialog[chain="${chainValue}"]`).forEach(otherDialog => {
+    if (otherDialog !== dialog && otherDialog.open) {
+      unbindAutoHide(otherDialog);
+      fadeOut(otherDialog, duration);
+    }
+  });
+}
 
 function showDialog(dialog, dialogConfig, anchorConfig, autoHide, duration, fade) {
   const currentState = getDialogState(dialog);
   if (currentState === 'showing' || (dialog.open && currentState === 'idle')) return;
-
+// Close other dialogs in the same chain before opening this one
+  closeChainedDialogs(dialog, duration);
   if (fade) {
     fadeIn(dialog, dialogConfig, anchorConfig, duration);
   } else {
@@ -172,7 +185,8 @@ function showDialog(dialog, dialogConfig, anchorConfig, autoHide, duration, fade
       dialog.__currentAnimation.cancel();
       dialog.__currentAnimation = null;
     }
-    dialog.style.opacity = '';
+    // Clear animations instead of dialog.style.opacity = ''
+    dialog.getAnimations().forEach(a => a.cancel());
     setDialogState(dialog, 'idle');
     if (dialogConfig && anchorConfig) {
       positionDialog(dialog, dialogConfig, anchorConfig);

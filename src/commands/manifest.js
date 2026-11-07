@@ -15,6 +15,7 @@ import dialog from './dialog/index.js';
 import modal from './modal/index.js';
 import tick from './tick/index.js';
 import func from './func/index.js';
+import collapse from './collapse/index.js';
 
 const commands = [
   ...text,
@@ -33,6 +34,7 @@ const commands = [
   ...modal,
   ...tick,
   ...func,
+  ...collapse,
 ];
 
 export default commands;

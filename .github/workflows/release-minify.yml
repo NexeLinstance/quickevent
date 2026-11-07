@@ -30,13 +30,10 @@ jobs:
           mkdir -p dist/lib
           cp src/lib/purify.min.js dist/lib/purify.min.js
 
-      - name: Deploy to cdn branch
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: cdn
-          destination_dir: .
+      - name: Copy Markers CSS to dist
+        run: |
+          mkdir -p dist
+          cp src/assets/quickevent-markers.css dist/quickevent-markers.css
 
       - name: Upload release assets
         env:
@@ -45,4 +42,5 @@ jobs:
           gh release upload "${GITHUB_REF_NAME}" \
             dist/quickevent.min.js \
             dist/lib/purify.min.js \
+            dist/quickevent-markers.css \
             --clobber
