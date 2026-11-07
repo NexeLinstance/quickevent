@@ -32,12 +32,13 @@ setText(selector, text)
 ## Quick start
 #### html
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js"></script>
-
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css">
 ```
 ####  nexelpy (python)
 ```python
 x.script(parent=x.HEAD_tag,src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js",type="module",props="defer")
+x.link(parent=x.HEAD_tag, rel="stylesheet" ,href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css")
 ```
 
 ## ایونت‌ها

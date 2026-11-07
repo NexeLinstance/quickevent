@@ -1,8 +1,10 @@
 
+
+
 <div align="center">
   <h1>⚡ QuickEvent</h1>
   <p><strong>فریم‌ورک سبک و مدرن جاوااسکریپت برای ساخت رابط‌های کاربری واکنش‌گرا (Reactive) بدون نیاز به کدنویسی پیچیده.</strong></p>
-  <p>ساخته شده برای یکپارچگی کامل با <a href="https://nexelpy.net">Nexelpy</a> (پایتون)</p>
+  <p>ساخته شده برای یکپارچگی کامل با (پایتون)</p> <a href="https://nexelpy.net">Nexelpy</a>
 </div>
 
 ---
@@ -15,11 +17,16 @@
 - **🐍 یکپارچگی کامل با پایتون:** بهترین تجربه توسعه در Nexelpy.
 - **⚙️ مبتنی بر کامند:** تمام عملیات (از تغییر متن تا ارسال Ajax) به صورت یک لیست ساده و قابل ترکیب انجام می‌شود.
 
----
 
 ## 🚀 شروع سریع
 
-### در Nexelpy (پایتون)
+### ۱. بارگذاری استایل‌ها (اختیاری اما توصیه‌شده)
+برای استفاده از مارکرهای زیبا در کولپس‌ها، فایل CSS مارکرها را در `<head>` لود کنید:
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css">
+```
+
+### ۲. در Nexelpy (پایتون)
 
 در Nexelpy، کافی است اسکریپت QuickEvent را به تگ `head` اضافه کنید و از اتریبیوت‌های ایونت (مثل `click`) در کامپوننت‌های خود استفاده کنید:
 
@@ -40,7 +47,7 @@ async def home():
     return x.RESPONSE()
 ```
 
-### در HTML خالص
+### ۳. در HTML خالص
 
 اگر از پایتون استفاده نمی‌کنید، می‌توانید QuickEvent را مستقیماً در HTML خود بارگذاری کنید:
 
@@ -63,6 +70,7 @@ QuickEvent مجموعه‌ای از کامندهای آماده برای انج�
 |---|---|---|
 | **متن (Text)** | `setText`, `appendText`, `prependText`, `getText` | جایگذاری، افزودن و خواندن متن. |
 | **HTML** | `setHtml`, `appendHtml`, `prependHtml`, `getHtml` | تغییر محتوای HTML (با فیلتر امنیتی). |
+| **HTML امن (Trust)** | `setHtmlTrust`, `appendHtmlTrust`, `prependHtmlTrust` | تغییر HTML بدون فیلتر (فقط برای محتوای مطمئن بک‌اند). |
 | **مقدار (Value)** | `setValue`, `getValue` | تغییر و خواندن مقدار `input` و `textarea`. |
 | **کلاس (Class)** | `addClass`, `removeClass`, `toggleClass`, `setClass` | مدیریت کلاس‌های CSS. |
 | **استایل (Style)** | `addStyle`, `removeStyle`, `toggleStyle`, `setStyle` | مدیریت استایل‌های inline. |
@@ -71,21 +79,23 @@ QuickEvent مجموعه‌ای از کامندهای آماده برای انج�
 | **شبکه (Ajax)** | `ajax`, `ajaxSuccess`, `ajaxError` | ارسال درخواست به سرور و مدیریت پاسخ. |
 | **منطق (Flow)** | `if`, `elif`, `else`, `for`, `wait`, `then` | کنترل جریان اجرا و شرط‌ها. |
 | **دیالوگ (Dialog)** | `showDialog`, `hideDialog`, `showModal`, `hideModal` | ساخت Popover و Modal. |
+| **کولپس (Collapse)** | `collapse`, `showCollapse`, `hideCollapse`, `toggleCollapse` | ساخت ویجت‌های بازوبسته‌شو (با پشتیبانی از آکاردئون). |
+| **توابع (Func)** | `runFunc`, `createFunc`, `callFunc` | ساخت و فراخوانی توابع سفارشی. |
 | **سیستم (System)** | `log`, `redirect`, `reload`, `setCookie`, `getCookie` | ابزارهای سیستمی و کوکی‌ها. |
 
 ---
 
 ## 🛡️ امنیت
 
-QuickEvent به طور خودکار از کتابخانه **DOMPurify** برای پاک‌سازی HTML استفاده می‌کند. این بدان معناست که اگر داده‌ای از سمت کاربر دریافت کنید و آن را با `setHtml` نمایش دهید، کدهای مخرب (مثل `<script>`) به طور خودکار حذف می‌شوند. 
+کوییک ایونت به طور خودکار از کتابخانه **DOMPurify** برای پاک‌سازی HTML استفاده می‌کند. این بدان معناست که اگر داده‌ای از سمت کاربر دریافت کنید و آن را با `setHtml` نمایش دهید، کدهای مخرب (مثل `<script>`) به طور خودکار حذف می‌شوند.
 
-همچنین کامندهای `addAttr` و `redirect` در برابر تزریق کدهای مخرب (مانند `javascript:`) محافظت شده‌اند.
+همچنین کامندهای `addAttr` و `redirect` در برابر تزریق کدهای مخرب (مانند `javascript: `) محافظت شده‌اند.
 
 ---
 
 ## 📖 مستندات کامل
 
-برای مشاهده لیست کامل ایونت‌ها، کامندها، توابع ریاضی، و نکات پیشرفته، به **[فایل مستندات (docs.md)](./docs.md)** مراجعه کنید.
+برای مشاهده لیست کامل ایونت‌ها، کامندها، توابع ریاضی، و نکات پیشرفته (از جمله نحوه استفاده از مارکرهای کولپس)، به **[فایل مستندات (docs.md)](./docs.md)** مراجعه کنید.
 
 ## 📦 دریافت نسخه‌ها
 
@@ -94,3 +104,4 @@ QuickEvent به طور خودکار از کتابخانه **DOMPurify** برای
 ## 📄 لایسنس
 
 MIT
+```
