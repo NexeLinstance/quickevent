@@ -25,10 +25,18 @@ jobs:
       - name: Build bundle
         run: npm run build
 
-      - name: Copy DOMPurify to dist
+      - name: Download DOMPurify from official releases
         run: |
           mkdir -p dist/lib
-          cp src/lib/purify.min.js dist/lib/purify.min.js
+          LATEST_URL=$(curl -s https://api.github.com/repos/cure53/DOMPurify/releases/latest \
+            | grep "browser_download_url.*purify.min.js" \
+            | cut -d '"' -f 4)
+          if [ -z "$LATEST_URL" ]; then
+            echo "Failed to resolve DOMPurify download URL"
+            exit 1
+          fi
+          echo "Downloading DOMPurify from: $LATEST_URL"
+          curl -fL -o dist/lib/purify.min.js "$LATEST_URL"
 
       - name: Copy Markers CSS to dist
         run: |
@@ -44,3 +52,29 @@ jobs:
             dist/lib/purify.min.js \
             dist/quickevent-markers.css \
             --clobber
+
+      - name: Push to cdn branch
+        run: |
+          mkdir -p cdn-tmp/lib
+          cp dist/quickevent.min.js cdn-tmp/quickevent.min.js
+          cp dist/lib/purify.min.js cdn-tmp/lib/purify.min.js
+          cp dist/quickevent-markers.css cdn-tmp/quickevent-markers.css
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout --orphan cdn
+          git rm -rf . >/dev/null 2>&1 || true
+          
+          cp -r cdn-tmp/* .
+          rm -rf cdn-tmp
+          
+          git add -A
+          git commit -m "cdn: ${GITHUB_REF_NAME}"
+          git push -f origin cdn
+
+      - name: Purge jsDelivr cache
+        run: |
+          curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js" || true
+          curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css" || true
+          curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/lib/purify.min.js" || true

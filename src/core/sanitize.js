@@ -3,11 +3,11 @@ let purifier = null;
 
 const purifyPromise = (async () => {
   try {
-    const mod = await import('./lib/purify.min.js');
+    const mod = await import(new URL('./lib/purify.min.js', import.meta.url).href);
     purifier = mod.default || window.DOMPurify;
-    
+
     purifier.setConfig({
-      FORBID_TAGS: ['base', 'style',  'iframe', 'object', 'embed'],
+      FORBID_TAGS: ['base', 'style', 'iframe', 'object', 'embed'],
       ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
     });
 
@@ -27,8 +27,8 @@ export async function cleanHtml(html) {
   }
 
   if (!purifier) {
-    console.warn('[QE Security] DOMPurify is not available. HTML insertion blocked for safety.');
-    return ''; 
+    console.warn('[QE] Security: DOMPurify is not available. HTML insertion blocked for safety.');
+    return '';
   }
 
   return purifier.sanitize(html);
