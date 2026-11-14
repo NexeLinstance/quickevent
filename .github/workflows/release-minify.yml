@@ -25,20 +25,12 @@ jobs:
       - name: Build bundle
         run: npm run build
 
-      - name: Download DOMPurify from official releases
+      - name: Download DOMPurify
         run: |
           mkdir -p dist/lib
-          # استفاده از عبارت منظم برای پیدا کردن دقیقاً لینک purify.min.js و جلوگیری از پیدا شدن فایل .sigstore.json
-          LATEST_URL=$(curl -s https://api.github.com/repos/cure53/DOMPurify/releases/latest \
-            | grep -o "https://[^\"]*purify.min.js" \
-            | head -n 1)
-          
-          if [ -z "$LATEST_URL" ]; then
-            echo "Failed to resolve DOMPurify download URL"
-            exit 1
-          fi
-          echo "Downloading DOMPurify from: $LATEST_URL"
-          curl -fL -o dist/lib/purify.min.js "$LATEST_URL"
+          # دانلود مستقیم آخرین نسخه از jsDelivr (بسیار مطمئن‌تر از API گیت‌هاب)
+          echo "Downloading DOMPurify from jsDelivr..."
+          curl -fL -o dist/lib/purify.min.js "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"
 
       - name: Copy Markers CSS to dist
         run: |
