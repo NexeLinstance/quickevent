@@ -28,9 +28,11 @@ jobs:
       - name: Download DOMPurify from official releases
         run: |
           mkdir -p dist/lib
+          # استفاده از عبارت منظم برای پیدا کردن دقیقاً لینک purify.min.js و جلوگیری از پیدا شدن فایل .sigstore.json
           LATEST_URL=$(curl -s https://api.github.com/repos/cure53/DOMPurify/releases/latest \
-            | grep "browser_download_url.*purify.min.js" \
-            | cut -d '"' -f 4)
+            | grep -o "https://[^\"]*purify.min.js" \
+            | head -n 1)
+          
           if [ -z "$LATEST_URL" ]; then
             echo "Failed to resolve DOMPurify download URL"
             exit 1
