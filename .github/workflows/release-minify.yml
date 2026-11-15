@@ -45,7 +45,7 @@ jobs:
             dist/quickevent-markers.css \
             --clobber
 
-      - name: Push to cdn branch and create tag
+      - name: Push to cdn branch and update tags
         run: |
           mkdir -p /tmp/cdn-tmp/lib
           cp dist/quickevent.min.js /tmp/cdn-tmp/quickevent.min.js
@@ -63,5 +63,21 @@ jobs:
           git commit -m "cdn: ${GITHUB_REF_NAME}"
           git push -f origin cdn
 
-          git tag "cdn-${GITHUB_REF_NAME}"
-          git push origin "cdn-${GITHUB_REF_NAME}"
+          git tag -f latest
+          git push origin latest -f
+
+          if echo "${{ github.event.release.body }}" | grep -q "\[stable\]"; then
+            echo "Marking this release as stable..."
+            git tag -f stable
+            git push origin stable -f
+          fi
+
+      - name: Purge jsDelivr cache
+        run: |
+          curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js" || true
+          curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent-markers.css" || true
+          
+          if echo "${{ github.event.release.body }}" | grep -q "\[stable\]"; then
+            curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js" || true
+            curl -fsS "https://purge.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css" || true
+          fi
