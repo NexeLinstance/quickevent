@@ -28,6 +28,7 @@ jobs:
       - name: Download DOMPurify
         run: |
           mkdir -p dist/lib
+          # Download latest version directly from jsDelivr
           echo "Downloading DOMPurify from jsDelivr..."
           curl -fL -o dist/lib/purify.min.js "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"
 
@@ -48,21 +49,30 @@ jobs:
 
       - name: Push to cdn branch
         run: |
+          # 1. Create a clean temporary folder with ONLY the files we need
           mkdir -p cdn-tmp/lib
           cp dist/quickevent.min.js cdn-tmp/quickevent.min.js
           cp dist/lib/purify.min.js cdn-tmp/lib/purify.min.js
           cp dist/quickevent-markers.css cdn-tmp/quickevent-markers.css
 
+          # 2. Configure git user
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # 3. Switch to an empty orphan branch
           git checkout --orphan cdn
+          
+          # 4. Wipe EVERYTHING from the working directory (including node_modules, package.json, etc.)
           git rm -rf . >/dev/null 2>&1 || true
-          
+          git clean -fdx
+
+          # 5. Copy back ONLY our clean files
           cp -r cdn-tmp/* .
-          rm -rf cdn-tmp
           
-          git add -A
+          # 6. Stage ONLY the specific files we copied
+          git add quickevent.min.js quickevent-markers.css lib/purify.min.js
+          
+          # 7. Commit and force-push to the cdn branch
           git commit -m "cdn: ${GITHUB_REF_NAME}"
           git push -f origin cdn
 
