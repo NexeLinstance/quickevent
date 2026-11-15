@@ -28,7 +28,6 @@ jobs:
       - name: Download DOMPurify
         run: |
           mkdir -p dist/lib
-          # Download latest version directly from jsDelivr
           echo "Downloading DOMPurify from jsDelivr..."
           curl -fL -o dist/lib/purify.min.js "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"
 
@@ -49,11 +48,11 @@ jobs:
 
       - name: Push to cdn branch
         run: |
-          # 1. Create a clean temporary folder with ONLY the files we need
-          mkdir -p cdn-tmp/lib
-          cp dist/quickevent.min.js cdn-tmp/quickevent.min.js
-          cp dist/lib/purify.min.js cdn-tmp/lib/purify.min.js
-          cp dist/quickevent-markers.css cdn-tmp/quickevent-markers.css
+          # 1. Create the temp folder OUTSIDE the repo workspace (/tmp)
+          mkdir -p /tmp/cdn-tmp/lib
+          cp dist/quickevent.min.js /tmp/cdn-tmp/quickevent.min.js
+          cp dist/lib/purify.min.js /tmp/cdn-tmp/lib/purify.min.js
+          cp dist/quickevent-markers.css /tmp/cdn-tmp/quickevent-markers.css
 
           # 2. Configure git user
           git config user.name "github-actions[bot]"
@@ -62,17 +61,17 @@ jobs:
           # 3. Switch to an empty orphan branch
           git checkout --orphan cdn
           
-          # 4. Wipe EVERYTHING from the working directory (including node_modules, package.json, etc.)
+          # 4. Wipe EVERYTHING from the working directory (including node_modules)
           git rm -rf . >/dev/null 2>&1 || true
           git clean -fdx
 
-          # 5. Copy back ONLY our clean files
-          cp -r cdn-tmp/* .
+          # 5. Copy back our files from the safe /tmp location
+          cp -r /tmp/cdn-tmp/* .
           
-          # 6. Stage ONLY the specific files we copied
+          # 6. Stage ONLY the specific files
           git add quickevent.min.js quickevent-markers.css lib/purify.min.js
           
-          # 7. Commit and force-push to the cdn branch
+          # 7. Commit and force-push
           git commit -m "cdn: ${GITHUB_REF_NAME}"
           git push -f origin cdn
 
