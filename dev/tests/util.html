@@ -21,7 +21,7 @@
 </head>
 <body>
   <h1>Utility commands</h1>
-
+<button click='["scrollTo", "#end"]'>scroll to end</button>
   <!-- ── wait ────────────────────────────────────────────── -->
   <section>
     <h2>wait</h2>
@@ -93,8 +93,8 @@
       <div id="u5-bottom">bottom</div>
     </div></div>
     <button click='["scrollTo", "#u5-middle"]'>scroll to #middle</button>
-    <button click='["scrollTo", "#u5-bottom"]'>scroll to #bottom</button>
-    <button click='["scrollTo", "#u5-top"]'>scroll to #top</button>
+    <button click='["scrollTo", "#u5-bottom","#scroll-area"]'>scroll to #bottom</button>
+    <button click='["scrollTo", "#u5-top","#scroll-area"]'>scroll to #top</button>
   </section>
 
   <!-- ── getLocation ─────────────────────────────────────── -->
@@ -102,14 +102,12 @@
     <h2>getLocation</h2>
     <p class="desc">Read parts of the current URL. Writes to output.</p>
     <div class="row"><span class="label">Result:</span> <span class="target" id="u6-out">(empty)</span></div>
-    <button click='["setText", "#u6-out", ["getLocation", "href"]]'>href</button>
-    <button click='["setText", "#u6-out", ["getLocation", "pathname"]]'>pathname</button>
-    <button click='["setText", "#u6-out", ["getLocation", "search"]]'>search</button>
-    <button click='["setText", "#u6-out", ["getLocation", "hash"]]'>hash</button>
-    <button click='[
-      ["getLocation", "href", "u"],
-      ["setText", "#u6-out", "URL length = { length(u) }"]
-    ]'>alias + length</button>
+    <button click='["setText", "#u6-out", "{window.location.href}"]'>href</button>
+    <button click='["setText", "#u6-out", "{window.location.pathname}"]'>pathname</button>
+    <button click='["setText", "#u6-out","{window.location.search}"]'>search</button>
+    <button click='["setText", "#u6-out", "{window.location.hash}"]'>hash</button>
+    <button click='["setText", "#u6-out", "URL length = { length(window.location.href) }"]
+    '>alias + length</button>
   </section>
 
   <!-- ── copyClipboard / pasteClipboard ──────────────────── -->
@@ -138,7 +136,7 @@
     <button click='["wait"]'>wait missing arg</button>
     <button click='["wait", "abc"]'>wait non-number</button>
     <button click='["focus", "#nope"]'>focus missing element</button>
-    <button click='["getLocation", "not-a-key"]'>getLocation invalid key</button>
+    <button click='["getLocation", "not-a-key"]' id="end">getLocation invalid key</button>
   </section>
 
   <script type="module" src="./setup.js"></script>

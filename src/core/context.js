@@ -2,11 +2,6 @@
 import { Reporter, consoleSink } from './reporter.js';
 import { Registry } from './registry.js';
 
-// ─────────────────────────────────────────────────────────────
-// Scheduler
-// Collects pending promises so "then" can await all of them.
-// ─────────────────────────────────────────────────────────────
-
 export class Scheduler {
   constructor() {
     this.pending = [];
@@ -14,7 +9,6 @@ export class Scheduler {
 
   push(promise) {
     if (promise instanceof Promise) {
-      // Prevent unhandled rejection warnings; errors are handled upstream.
       this.pending.push(promise.catch(() => {}));
     }
   }
@@ -31,11 +25,6 @@ export class Scheduler {
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Context
-// One object per execution (event fire, tick, loadDom).
-// ─────────────────────────────────────────────────────────────
-
 export function createContext(options = {}) {
   const {
     element = null,
@@ -50,14 +39,14 @@ export function createContext(options = {}) {
     element,
     event,
     attribute,
-
+    _currentElement: element, 
     // Shared services
     registry: registry ?? new Registry([]),
     reporter: reporter ?? new Reporter({ sinks: [consoleSink] }),
     scheduler: new Scheduler(),
 
     // Execution state
-    vars: Object.create(null),              // alias store (from getters with alias, assignments)
+    vars: Object.assign(Object.create(null), { _currentElement: element }),
     ifStack: [],                            // stack of { ran, active } for if/elif/else chains
     loopStack: [],                          // stack of {} for nested "for" loops
     response: null,                         // last AJAX response
@@ -72,7 +61,6 @@ export function createContext(options = {}) {
     pendingAjax: null,
 
     // ── Convenience API for command authors ──
-
     report(err, extra = {}) {
       this.reporter.report(err, {
         element: this.element,
@@ -108,9 +96,7 @@ export function createContext(options = {}) {
       },
     },
 
-    // Called by flow commands (if/elif/else) and "for"
     runBody(body, subContext = {}) {
-      // Imported lazily to avoid circular dependency at module load time.
       return import('./interpreter.js').then(({ runEffects }) =>
         runEffects(body, { ...this, ...subContext })
       );

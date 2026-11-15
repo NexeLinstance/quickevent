@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Scoping Selector Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 30px; padding: 20px; border: 2px solid #ddd; border-radius: 8px; background: #fafafa; position: relative; }
+    h2 { margin-top: 0; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+    button { padding: 8px 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; margin-bottom: 10px; }
+    button:hover { background: #0056b3; }
+    .output { background: #222; color: #0f0; padding: 10px; border-radius: 4px; font-family: monospace; min-height: 20px; margin-top: 10px; }
+    .box { background: #eef; padding: 15px; border: 1px dashed #88c; margin: 10px 0; border-radius: 4px; }
+    .nested { background: #fee; border-color: #c88; }
+    .target-text { font-weight: bold; color: #d9534f; }
+  </style>
+</head>
+<body>
+  <h1>Scoping Selector Tests</h1>
+  <p>هر باکس یک <code>data-scoping</code> مستقل دارد. دکمه‌های داخل هر باکس باید فقط روی المان‌های همان باکس اثر بگذارند.</p>
+
+  <!-- ── Test 1: Basic Scoping ──────────────────────────── -->
+  <div data-scoping="group-1">
+    <section>
+      <h2>1. Basic Scoping (Group 1)</h2>
+      <p class="target-text" id="t1-target">This text is inside group-1.</p>
+      <button click='["setText", "{scopingSelector} .target-text", "Updated by Group 1!"]'>
+        Update Text (Group 1)
+      </button>
+    </section>
+  </div>
+
+  <!-- ── Test 2: Same selector, different scope ─────────── -->
+  <div data-scoping="group-2">
+    <section>
+      <h2>2. Same Selector (Group 2)</h2>
+      <p class="target-text">This text is inside group-2.</p>
+      <button click='["setText", "{scopingSelector} .target-text", "Updated by Group 2!"]'>
+        Update Text (Group 2)
+      </button>
+    </section>
+  </div>
+
+  <!-- ── Test 3: Nested Scoping ─────────────────────────── -->
+  <div data-scoping="outer">
+    <section>
+      <h2>3. Nested Scoping (Outer)</h2>
+      <p class="target-text">Outer text</p>
+      
+      <div class="nested" data-scoping="inner">
+        <p class="target-text">Inner text</p>
+        <button click='["setText", "{scopingSelector} .target-text", "Updated by INNER!"]'>
+          Update Inner Text
+        </button>
+      </div>
+
+      <button click='["setText", "{scopingSelector} .target-text", "Updated by OUTER!"]'>
+        Update Outer Text
+      </button>
+    </section>
+  </div>
+
+  <!-- ── Test 4: Scoping inside `if` ────────────────────── -->
+  <div data-scoping="group-4">
+    <section>
+      <h2>4. Scoping inside an `if`</h2>
+      <p class="target-text">Condition text</p>
+      <button click='[
+        ["getValue", "#input-4", "val"],
+        ["if", "{ val * 1 > 10 }", [
+          ["setText", "{scopingSelector} .target-text", "Value is big!"]
+        ], [
+          ["setText", "{scopingSelector} .target-text", "Value is small!"]
+        ]]
+      ]'>
+        Check Value
+      </button>
+      <br>
+      <input id="input-4" type="number" value="15" style="padding: 4px;">
+    </section>
+  </div>
+
+  <!-- ── Test 5: Scoping inside `for` ───────────────────── -->
+  <div data-scoping="group-5">
+    <section>
+      <h2>5. Scoping inside a `for` loop</h2>
+      <p class="target-text">Start</p>
+      <button click='[
+        ["setText", "{scopingSelector} .target-text", ""],
+        ["for", "i", [1, 2, 3], [
+          ["appendText", "{scopingSelector} .target-text", "Item {i} "]
+        ]]
+      ]'>
+        Run Loop
+      </button>
+    </section>
+  </div>
+
+  <!-- ── Test 6: Source Command with Scoping ────────────── -->
+  <div data-scoping="group-6">
+    <section>
+      <h2>6. Scoping with getText</h2>
+      <p class="target-text">this is text of p in data-scoping="group-6"</p>
+      <div class="output" id="out-6">(output)</div>
+      <button click='[
+        ["getText", "{scopingSelector} .target-text", "extractedText"],
+        ["setText", "#out-6", "Read: {extractedText}"]
+      ]'>
+        Read Text from Group 6
+      </button>
+    </section>
+  </div>
+
+  <!-- ── Test 7: Outside any scope (should be null) ─────── -->
+  <section data-scoping="group-7">
+    <h2>7. Outside any scope</h2>
+    <p>This button has no parent with <code>data-scoping</code>.</p>
+    <div class="output" id="out-7">(output)</div>
+    <button click='["setText", "#out-7", "{scopingSelector}"]'>
+      Check Scoping
+    </button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

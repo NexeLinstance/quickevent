@@ -59,7 +59,7 @@ export async function resolveArg(arg, ctx) {
 
   // Template string with { ... }
   if (typeof arg === 'string' && arg.includes('{')) {
-    const result = renderTemplate(arg, ctx.vars);
+    const result = renderTemplate(arg, ctx.vars, ctx); 
     // Propagate store (assignment) into ctx.vars
     if (result.store) {
       ctx.vars[result.store.key] = result.store.value;

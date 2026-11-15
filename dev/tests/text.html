@@ -189,7 +189,10 @@
       ["setText", "#e1-target", "second (ran after error)"]
     ]'>unknown command continues</button>
     <button click='["setText", "#does-not-exist", "no such element"]'>missing selector</button>
+
   </section>
+<button click='["setText", "#window", "{window.devicePixelRatio}"]'>{window.width}</button>
+<p id="window"></p>
 
   <script type="module" src="./setup.js"></script>
 </body>

@@ -7,7 +7,7 @@ import scrollTo from './scrollTo.js';
 import focus from './focus.js';
 import copyClipboard from './copyClipboard.js';
 import pasteClipboard from './pasteClipboard.js';
-import getLocation from './getLocation.js';
+
 
 export default [
   wait,
@@ -18,6 +18,6 @@ export default [
   focus,
   copyClipboard,
   pasteClipboard,
-  getLocation,
+
   
 ];

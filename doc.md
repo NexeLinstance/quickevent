@@ -32,15 +32,24 @@ setText(selector, text)
 ## Quick start
 #### html
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js" defer></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css">
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js" defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css">
 ```
 ####  nexelpy (python)
 ```python
-x.script(parent=x.HEAD_tag,src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js",type="module",props="defer")
-x.link(parent=x.HEAD_tag, rel="stylesheet" ,href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css")
+x.script(parent=x.HEAD_tag,src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js",type="module",props="defer")
+x.link(parent=x.HEAD_tag, rel="stylesheet" ,href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css")
 ```
 
+```html
+<!-- برای آخرین نسخه ریلیز شده (حتی آلفا) -->
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent-markers.css">
+
+<!-- برای نسخه پایدار و تست‌شده (توصیه‌شده) -->
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css">
+```
 ## ایونت‌ها
 
 کوییک ایونت از ایونت‌های زیر پشتیبانی می‌کند:
@@ -480,13 +489,8 @@ click=["removeProps", "#submit-btn", "disabled hidden"]
 ["scrollTo", "target"]
 ["focus", "selector"]
 ["copyClipboard", "selector", "value"]
-["pasteClipboard", "selector"]
-["getLocation", "href"]
-["getLocation", "pathname"]
-["getLocation", "search"]
-["getLocation", "hash"]
+["pasteClipboard", "selector"] 
 ```
-
 🔘 `wait`: <br>
 بین دو دسته از کامندها تأخیر ایجاد می‌کند. کامندهای بعد از ,ویت هم‌زمان با کامندهای قبل اجرا نمی‌شوند، بلکه پس از مدت تعیین‌شده اجرا می‌شوند.<br>
 درمثال زیر کامند های 1 و 2 همزمان اجرا میشه و بعد از 2 ثانیه کامند های 4 و 4 همزمان اجرا میشن
@@ -1189,7 +1193,229 @@ with x.details():
 ```
 💡 برای ساخت چند گروه مستقل، برای هر گروه یک مقدار متفاوت (مثلاً accordion="FAQ1" و accordion="FAQ2") در نظر بگیرید.
 
-
+---
+## submit event
 ایونت سابمیت روی تگ فورم باید نوشته بشه تا رفتار پیشفرض که ارسال فورم به روش سنتی هست کنسل کنه و ایونت مورد نظر شما رو اجرا کنه .💡
 به عنوان مثال بجای ارسال فورم ، شو دیالوگ ران بشه و تایید بگیره .
-*پایان مستندات QuickEvent*
+
+
+
+## 🪟 دسترسی به Window (بدون کامند گت)
+
+در QuickEvent نیازی به استفاده از کامند اضافی برای خواندن اطلاعات مرورگر نیست. با استفاده از سینتکس `{window.property}` می‌توانید مستقیماً به تمام ویژگی‌ها و توابع استاندارد شیء `window` در جاوااسکریپت دسترسی داشته باشید.
+
+> **نکته:** مقادیر ویندو همیشه در لحظه‌ای که کامند اجرا می‌شود خوانده می‌شوند. بنابراین اگر کاربر اسکرول کند یا سایز صفحه را تغییر دهد، مقدار جدید در کلیک بعدی خوانده می‌شود.
+
+### 📍 آدرس و مسیریابی (Location)
+یکی از پرکاربردترین بخش‌ها، دسترسی به آدرس صفحه و اجزای آن است.
+```python
+# آدرس کامل صفحه
+"{window.location.href}"
+
+# نام دامنه
+"{window.location.hostname}"
+
+# مسیر صفحه (بدون دامنه)
+"{window.location.pathname}"
+
+# کوئری استرینگ (بعد از علامت سوال)
+"{window.location.search}"
+
+# هش (بعد از علامت #)
+"{window.location.hash}"
+
+# پروتکل (http یا https)
+"{window.location.protocol}"
+```
+
+### 📏 ابعاد و اندازه‌ها (Dimensions)
+برای طراحی‌های واکنش‌گرا (Responsive) و محاسبه‌ی سایز صفحه:
+```python
+# عرض و ارتفاع ناحیه قابل مشاهده (Viewport) - شامل اسکرول‌بار
+"{window.innerWidth}"
+"{window.innerHeight}"
+
+# عرض و ارتفاع کل پنجره مرورگر
+"{window.outerWidth}"
+"{window.outerHeight}"
+
+# نسبت پیکسل فیزیکی دستگاه (مثلاً 1.5 برای رتینا)
+"{window.devicePixelRatio}"
+```
+
+### 🖥️ مشخصات صفحه‌نمایش (Screen)
+اطلاعات مربوط به مانیتور کاربر:
+```python
+# عرض و ارتفاع کل صفحه‌نمایش
+"{window.screen.width}"
+"{window.screen.height}"
+
+# عرض و ارتفاع قابل استفاده (بدون نوار وظیفه ویندوز)
+"{window.screen.availWidth}"
+"{window.screen.availHeight}"
+```
+
+### 📜 موقعیت اسکرول (Scroll)
+برای پیاده‌سازی افکت‌های پارالاکس یا استیکر (Sticky):
+```python
+# میزان اسکرول از محور افقی
+"{window.scrollX}"
+
+# میزان اسکرول از محور عمودی
+"{window.scrollY}"
+
+# مترادف‌های قدیمی‌تر
+"{window.pageXOffset}"
+"{window.pageYOffset}"
+```
+
+### 🌐 اطلاعات مرورگر و سیستم‌عامل (Navigator)
+تشخیص نوع مرورگر، زبان و وضعیت اتصال:
+```python
+# رشته شناسایی مرورگر (User Agent)
+"{window.navigator.userAgent}"
+
+# زبان پیش‌فرض مرورگر
+"{window.navigator.language}"
+
+# سیستم‌عامل
+"{window.navigator.platform}"
+
+# آیا کوکی‌ها فعال هستند؟
+"{window.navigator.cookieEnabled}"
+
+# آیا کاربر آنلاین است؟
+"{window.navigator.onLine}"
+```
+
+### 📄 اطلاعات سند (Document)
+دسترسی به اطلاعات کلی صفحه:
+```python
+# عنوان صفحه (تیتر تب مرورگر)
+"{window.document.title}"
+
+# آدرس کامل صفحه (مترادف با href)
+"{window.document.URL}"
+
+# آدرس صفحه‌ای که کاربر از آن آمده است
+"{window.document.referrer}"
+
+# ابعاد واقعی محتوای صفحه (بدون اسکرول‌بار)
+"{window.document.documentElement.clientWidth}"
+"{window.document.documentElement.clientHeight}"
+```
+
+### 📚 تاریخچه (History)
+```python
+# تعداد صفحاتی که کاربر در این تب باز کرده است
+"{window.history.length}"
+```
+
+---
+
+### 💡 مثال‌های کاربردی
+
+**۱. نمایش وضعیت اسکرول کاربر:**
+```html
+<button click='["setText", "#status", "شما {window.scrollY} پیکسل اسکرول کرده‌اید"]'>
+  موقعیت من کجاست؟
+</button>
+```
+
+**۲. تشخیص موبایل یا دسکتاپ (بر اساس عرض):**
+```html
+<button click='[
+  ["if", "{window.innerWidth < 768}", [
+    ["setText", "#device", "شما از موبایل استفاده می‌کنید"]
+  ], [
+    ["setText", "#device", "شما از دسکتاپ استفاده می‌کنید"]
+  ]]
+]'>
+  تشخیص دستگاه
+</button>
+```
+
+
+
+**۴. هشدار قبل از ترک صفحه (ترکیب با `beforeunload`):**
+```html
+<body loadDom='[
+  ["addAttr", "window", "onbeforeunload", "return confirm(\"آیا مطمئن هستید؟\")"]
+]'>
+```
+
+
+## 🎯 اسکوپینگ هوشمند (Scoping Selector)
+
+در پروژه‌های بزرگ، نوشتن سلکتورهای طولانی و تکراری (مثل `#sidebar .user-list .item`) خسته‌کننده و مستعد خطاست. QuickEvent با معرفی `{scopingSelector}` این مشکل را کاملاً حل کرده است.
+
+این ویژگی به شما اجازه می‌دهد یک کانتینر (والد) را با اتریبیوت `data-scoping` علامت‌گذاری کنید. سپس با استفاده از `{scopingSelector}` در هر جای داخل آن کانتینر، به صورت خودکار به آن والد اشاره کنید.
+
+### 📝 سینتکس و نحوه استفاده
+
+۱. والد (Container) را تعریف کنید:
+```html
+<div data-scoping="user-section">
+  <p class="name">Ali</p>
+  <button click='["setText", "{scopingSelector} .name", "Reza"]'>
+    Change Name
+  </button>
+</div>
+```
+
+۲. در دکمه‌ی بالا، وقتی کلیک شود، عبارت `{scopingSelector}` توسط QuickEvent به `[data-scoping="user-section"]` تبدیل می‌شود. 
+در نتیجه، سلکتور نهایی برای کامند `setText` به این شکل خواهد بود:
+```css
+[data-scoping="user-section"] .name
+```
+
+### ✨ چرا این ویژگی عالی است؟
+
+۱. **عدم تداخل (No Conflict):** اگر چند باکس با کلاس یکسان (مثلاً `.name`) در صفحه داشته باشید، QuickEvent فقط المان داخل باکس خودش را تغییر می‌دهد و بقیه دست‌نخورده می‌مانند.
+۲. **کدهای کوتاه‌تر:** نیازی به نوشتن سلکتورهای تو در توی پیچیده نیست.
+۳. **قابلیت استفاده مجدد (Reusable Components):** می‌توانید یک کامپوننت HTML را بنویسید و ۱۰ بار در صفحه تکرار کنید. دکمه‌های داخل هر کامپوننت، فقط روی محتوای خودشان اثر می‌گذارند.
+
+### 🔄 اسکوپینگ تو در تو (Nested Scoping)
+اگر داخل یک `data-scoping`، یک `data-scoping` دیگر وجود داشته باشد، `{scopingSelector}` همیشه **نزدیک‌ترین والد** را پیدا می‌کند.
+
+```html
+<div data-scoping="outer">
+  <button click='["log", "I am in outer"]'>Outer Button</button>
+  
+  <div data-scoping="inner">
+    <button click='["setText", "{scopingSelector} .msg", "Hello from Inner!"]'>
+      Inner Button
+    </button>
+  </div>
+</div>
+```
+در کد بالا، دکمه‌ی Inner به `[data-scoping="inner"]` اشاره می‌کند، نه `outer`.
+
+### 🛠️ استفاده در کامندهای مختلف
+این ویژگی یک متغیر ارزیابی‌شده (مثل `{window.innerWidth}`) است، بنابراین در **تمام کامندها** (چه Effect، چه Source و چه Flow) کار می‌کند:
+
+**در `if`:**
+```html
+<button click='[
+  ["if", "{ window.innerWidth > 768 }", [
+    ["setText", "{scopingSelector} .layout", "Desktop Mode"]
+  ]]
+]'>Check Layout</button>
+```
+
+**در `getText` (خواندن مقدار):**
+```html
+<button click='[
+  ["getText", "{scopingSelector} .username", "name"],
+  ["log", "User: {name}"]
+]'>Read Username</button>
+```
+
+### ⚠️ اگر اسکوپ پیدا نشود چه می‌شود؟
+اگر از `{scopingSelector}` در المانی استفاده کنید که هیچ والدی با اتریبیوت `data-scoping` ندارد، این متغیر مقدار `null` (یا رشته خالی) برمی‌گرداند. 
+برای جلوگیری از خطاهای ناخواسته، QuickEvent یک هشدار (Warning) در کنسول مرورگر ثبت می‌کند تا توسعه‌دهنده متوجه شود که اسکوپ را فراموش کرده است.
+```
+
+### 📌 نکته :`{scopingSelector}` در پس‌زمینه از `element. closest ('[data-scoping]') ` استفاده می‌کند. این یعنی حتی اگر دکمه در عمق ۱۰ سطحی داخل باکس باشد، به درستی والد اصلی را پیدا می‌کند.
+
+

@@ -2,7 +2,6 @@
 import { parse } from './parser.js';
 import { evaluate } from './evaluator.js';
 
-// Splits "hello {name}" into [{type:'text',value:'hello '},{type:'expr',value:'name'}].
 export function parseTemplate(str) {
   if (typeof str !== 'string') return [{ type: 'text', value: str }];
   if (!str.includes('{')) return [{ type: 'text', value: str }];
@@ -29,7 +28,7 @@ export function parseTemplate(str) {
 }
 
 // Evaluate a template against vars. Single-expr → raw value; mixed → string.
-export function renderTemplate(template, vars) {
+export function renderTemplate(template, vars, ctx = {}) {
   const parts = parseTemplate(template);
 
   if (!parts.some(p => p.type === 'expr')) {
@@ -38,7 +37,7 @@ export function renderTemplate(template, vars) {
 
   if (parts.length === 1 && parts[0].type === 'expr') {
     const ast = parse(parts[0].value);
-    return evaluate(ast, vars);
+    return evaluate(ast, vars, ctx); 
   }
 
   let out = '';
@@ -46,7 +45,7 @@ export function renderTemplate(template, vars) {
   for (const p of parts) {
     if (p.type === 'text') { out += p.value; continue; }
     const ast = parse(p.value);
-    const r = evaluate(ast, vars);
+    const r = evaluate(ast, vars, ctx);
     if (r.store) { vars[r.store.key] = r.store.value; lastStore = r.store; }
     out += r.value == null ? '' : String(r.value);
   }
