@@ -1,16 +1,15 @@
 // src/core/sanitize.js
 let purifier = null;
 
+const PURIFY_CONFIG = {
+  FORBID_TAGS: ['base', 'style', 'iframe', 'object', 'embed'],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+};
+
 const purifyPromise = (async () => {
   try {
     const mod = await import(new URL('./lib/purify.min.js', import.meta.url).href);
     purifier = mod.default || window.DOMPurify;
-
-    purifier.setConfig({
-      FORBID_TAGS: ['base', 'style', 'iframe', 'object', 'embed'],
-      ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
-    });
-
     console.log('[QE] DOMPurify loaded and ready.');
     return purifier;
   } catch (err) {
@@ -20,7 +19,8 @@ const purifyPromise = (async () => {
 })();
 
 export async function cleanHtml(html) {
-  if (typeof html !== 'string') return '';
+  if (html == null) return '';
+  const str = String(html);
 
   if (!purifier) {
     await purifyPromise;
@@ -31,5 +31,5 @@ export async function cleanHtml(html) {
     return '';
   }
 
-  return purifier.sanitize(html);
+  return purifier.sanitize(str, PURIFY_CONFIG);
 }

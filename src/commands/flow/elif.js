@@ -6,14 +6,15 @@ export default {
   kind: 'flow',
   schema: ['any', 'array'],
   async run(ctx, [conditions, body], { runBody }) {
-    if (!ctx.branch || !ctx.branch.active) {
+    const frame = ctx.ifStack[ctx.ifStack.length - 1];
+    if (!frame || !frame.active) {
       throw { code: 'E020' };
     }
-    if (ctx.branch.ran) return;
+    if (frame.ran) return;
 
     const ok = buildCondition(conditions, ctx);
     if (ok) {
-      ctx.branch.ran = true;
+      frame.ran = true;
       await runBody(body);
     }
   },

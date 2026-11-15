@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · addClass with spaces</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 32px; padding: 16px; border: 1px solid #ddd; border-radius: 8px; }
+    h2 { margin: 0 0 6px; font-size: 1.05rem; }
+    button { margin: 4px 6px 4px 0; padding: 6px 12px; cursor: pointer; }
+    .target { background: #fffbe6; padding: 8px 14px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 140px; margin-top: 6px; }
+    .red { color: red; }
+    .bold { font-weight: bold; }
+    .pad { padding: 14px; background: #ffe; }
+    .expected { color: #666; font-size: 0.85rem; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>addClass with spaces (the bug)</h1>
+
+  <!-- ── Single class (works) ───────────────────────────── -->
+  <section>
+    <h2>1. Single class (control)</h2>
+    <button click='["addClass", "#t1", "red"]'>addClass "red"</button>
+    <div class="target" id="t1">target 1</div>
+    <div class="expected">Expected: works — text turns red.</div>
+  </section>
+
+  <!-- ── Multiple classes with space (broken) ──────────── -->
+  <section>
+    <h2>2. Multiple classes with space</h2>
+    <button click='["addClass", "#t2", "red bold"]'>addClass "red bold"</button>
+    <div class="target" id="t2">target 2</div>
+    <div class="expected">Expected: <strong>throws</strong> InvalidCharacterError in console. Text stays black, not bold.</div>
+  </section>
+
+  <!-- ── Multiple classes with extra spaces ────────────── -->
+  <section>
+    <h2>3. Multiple classes with extra spaces</h2>
+    <button click='["addClass", "#t3", "  red   bold  "]'>addClass "  red   bold  "</button>
+    <div class="target" id="t3">target 3</div>
+    <div class="expected">Expected: <strong>throws</strong> InvalidCharacterError. Text stays black.</div>
+  </section>
+
+  <!-- ── removeClass with spaces (also broken) ─────────── -->
+  <section>
+    <h2>4. removeClass with spaces</h2>
+    <button click='["setClass", "#t4", "target red bold pad"]'>reset to "red bold pad"</button>
+    <button click='["removeClass", "#t4", "red bold"]'>removeClass "red bold"</button>
+    <div class="target red bold pad" id="t4">target 4</div>
+    <div class="expected">Expected: <strong>throws</strong> InvalidCharacterError. Classes stay red+bold.</div>
+  </section>
+
+  <!-- ── toggleClass with spaces (also broken) ─────────── -->
+  <section>
+    <h2>5. toggleClass with spaces</h2>
+    <button click='["toggleClass", "#t5", "red bold"]'>toggleClass "red bold"</button>
+    <div class="target" id="t5">target 5</div>
+    <div class="expected">Expected: <strong>throws</strong> InvalidCharacterError. Nothing toggled.</div>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

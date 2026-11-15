@@ -63,6 +63,14 @@ function handleEvent(e, type, { registry, reporter }) {
   const el = e.target instanceof Element ? e.target : e.target?.parentElement;
   if (!el) return;
 
+  // mouseenter / mouseleave fire on EVERY element that gains/loses the mouse.
+  // If a child (with no [mouseenter] of its own) gains the mouse, e.target is
+  // the child, not the element with the attribute. We only want to fire when
+  // the mouse actually entered/left the element that carries the attribute.
+  if (type === 'mouseenter' || type === 'mouseleave') {
+    if (!el.hasAttribute(type)) return;
+  }
+
   const target = el.closest(`[${type}]`);
   if (!target) return;
 

@@ -13,7 +13,9 @@
     .row { margin: 8px 0; }
     .label { display: inline-block; min-width: 90px; color: #555; }
     .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 120px; }
+    .target-block { display: block; margin-top: 6px; min-height: 20px; }
     input { padding: 4px 8px; width: 100%; max-width: 320px; margin: 4px 0; }
+    .nested-box { border: 1px dashed #aaa; padding: 10px; border-radius: 6px; margin: 8px 0; background: #fafafa; }
   </style>
 </head>
 <body>
@@ -21,7 +23,7 @@
 
   <!-- ── if (single condition) ──────────────────────────── -->
   <section>
-    <h2>if · single condition</h2>
+    <h2>1. if · single condition</h2>
     <div class="row"><span class="label">Input:</span> <input id="if1-input" type="text" value="50"></div>
     <div class="row"><span class="label">Target:</span> <span class="target" id="if1-target">(empty)</span></div>
     <button click='[
@@ -40,7 +42,7 @@
 
   <!-- ── if / elif / else ───────────────────────────────── -->
   <section>
-    <h2>if / elif / else</h2>
+    <h2>2. if / elif / else</h2>
     <div class="row"><span class="label">Input:</span> <input id="if2-input" type="text" value="75"></div>
     <div class="row"><span class="label">Target:</span> <span class="target" id="if2-target">(empty)</span></div>
     <button click='[
@@ -59,7 +61,7 @@
 
   <!-- ── Multiple conditions with and/or ────────────────── -->
   <section>
-    <h2>and / or</h2>
+    <h2>3. and / or</h2>
     <div class="row"><span class="label">Input:</span> <input id="if3-input" type="text" value="75"></div>
     <div class="row"><span class="label">Target:</span> <span class="target" id="if3-target">(empty)</span></div>
     <button click='[
@@ -82,24 +84,60 @@
     ]'>(50,60) OR (90,100)</button>
   </section>
 
-  <!-- ── Multiple commands in body ──────────────────────── -->
+<!-- ── Nested if ─────────────────────────────────────── -->
   <section>
-    <h2>Multiple commands in body</h2>
-    <div class="row"><span class="label">Input:</span> <input id="if4-input" type="text" value="75"></div>
-    <div class="row"><span class="label">Target A:</span> <span class="target" id="if4-a">(empty)</span></div>
-    <div class="row"><span class="label">Target B:</span> <span class="target" id="if4-b">(empty)</span></div>
+    <h2>4. Nested if</h2>
+    <p class="desc">if within if, each with its own elif/else chain.</p>
+    <div class="row"><span class="label">Input:</span> <input id="nested1-input" type="text" value="75"></div>
+    <div class="nested-box">
+      <div>Outer: if n &gt; 50 → inner if/else; else → "small"</div>
+    </div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="nested1-target">(empty)</span></div>
     <button click='[
-      ["getValue", "#if4-input", "n"],
-      ["if",["{ n * 1 > 50 }"], [
-        ["setText", "#if4-a", "condition met"],
-        ["setText", "#if4-b", "multiple commands"]
+      ["getValue", "#nested1-input", "n"],
+      ["if", "{ n * 1 > 50 }", [
+        ["if", "{ n * 1 > 80 }", [
+          ["setText", "#nested1-target", "very big"]
+        ]],
+        ["else", [
+          ["setText", "#nested1-target", "medium"]
+        ]]
+      ]],
+      ["else", [
+        ["setText", "#nested1-target", "small"]
       ]]
-    ]'>if with multiple commands</button>
+    ]'>nested if/else</button>
+  </section>
+
+  <!-- ── Nested if (deeper) ────────────────────────────── -->
+  <section>
+    <h2>5. Deeply nested if</h2>
+    <div class="row"><span class="label">Input:</span> <input id="nested2-input" type="text" value="5"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="nested2-target">(empty)</span></div>
+    <button click='[
+      ["getValue", "#nested2-input", "n"],
+      ["if", "{ n * 1 > 0 }", [
+        ["if", "{ n * 1 > 3 }", [
+          ["if", "{ n * 1 > 10 }", [
+            ["setText", "#nested2-target", "very large"]
+          ]],
+          ["else", [
+            ["setText", "#nested2-target", "medium"]
+          ]]
+        ]],
+        ["else", [
+          ["setText", "#nested2-target", "small"]
+        ]]
+      ]],
+      ["else", [
+        ["setText", "#nested2-target", "non-positive"]
+      ]]
+    ]'>3 levels deep</button>
   </section>
 
   <!-- ── for: array ─────────────────────────────────────── -->
   <section>
-    <h2>for · array</h2>
+    <h2>6. for · array</h2>
     <div class="row">
       <span class="label">Source:</span>
       <span class="target multi">10</span>
@@ -124,8 +162,8 @@
 
   <!-- ── for: object ────────────────────────────────────── -->
   <section>
-    <h2>for · object</h2>
-    <p class="desc">We'll use an inline JSON object as source.</p>
+    <h2>7. for · object</h2>
+    <p class="desc">Inline JSON object as source.</p>
     <div class="row"><span class="label">Target:</span> <span class="target" id="for2-target">(empty)</span></div>
     <button click='[
       ["setText", "#for2-target", ""],
@@ -135,9 +173,9 @@
     ]'>for key/value</button>
   </section>
 
-  <!-- ── for with if ─────────────────────────────────────── -->
+  <!-- ── for + if ───────────────────────────────────────── -->
   <section>
-    <h2>for + if</h2>
+    <h2>8. for + if</h2>
     <div class="row">
       <span class="label">Source:</span>
       <span class="target multi">10</span>
@@ -156,9 +194,129 @@
     ]'>values > 15</button>
   </section>
 
+  <!-- ── for + if + else ───────────────────────────────── -->
+  <section>
+    <h2>9. for + if / else</h2>
+    <div class="row">
+      <span class="label">Source:</span>
+      <span class="target multi">10</span>
+      <span class="target multi">20</span>
+      <span class="target multi">30</span>
+      <span class="target multi">40</span>
+    </div>
+    <div class="row"><span class="label">Target:</span> <span class="target target-block" id="for4-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#for4-target", ""],
+      ["for", "i", ["getText", "span.multi"], [
+        ["if", "{ i * 1 > 15 }", [
+          ["appendText", "#for4-target", "high:{ i } | "]
+        ], [
+          ["appendText", "#for4-target", "low:{ i } | "]
+        ]]
+      ]]
+    ]'>classify values</button>
+  </section>
+
+  <!-- ── Nested for ─────────────────────────────────────── -->
+  <section>
+    <h2>10. Nested for</h2>
+    <p class="desc">for within for. The outer loop runs first, inner loop runs per outer iteration.</p>
+    <div class="row"><span class="label">Source:</span> <span class="target" id="nested-for-matrix">[[1,2,3],[4,5,6]]</span></div>
+    <div class="row"><span class="label">Target:</span> <span class="target target-block" id="nested-for-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#nested-for-target", ""],
+      ["for", "row", [[1,2,3],[4,5,6]], [
+        ["appendText", "#nested-for-target", "row { index }: "],
+        ["for", "cell", "{ row }", [
+          ["appendText", "#nested-for-target", " { cell }"]
+        ]],
+        ["appendText", "#nested-for-target", "\n"]
+      ]]
+    ]'>nested for (matrix)</button>
+  </section>
+
+  <!-- ── for + if + for ────────────────────────────────── -->
+  <section>
+    <h2>11. for + if + for</h2>
+    <p class="desc">A for, an if inside, and another for inside.</p>
+    <div class="row"><span class="label">Source:</span> <span class="target" id="nested-for-if-for">[[1,2],[3,4],[5,6]]</span></div>
+    <div class="row"><span class="label">Target:</span> <span class="target target-block" id="nested-mixed-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#nested-mixed-target", ""],
+      ["for", "row", [[1,2],[3,4],[5,6]], [
+        ["if", "{ index * 1 == 1 }", [
+          ["appendText", "#nested-mixed-target", "second row: "],
+          ["for", "cell", "{ row }", [
+            ["appendText", "#nested-mixed-target", "{ cell } "]
+          ]],
+          ["appendText", "#nested-mixed-target", "\n"]
+        ]]
+      ]]
+    ]'>only 2nd row</button>
+  </section>
+
+  <!-- ── Deep mix ───────────────────────────────────────── -->
+  <section>
+    <h2>12. Deep mix</h2>
+    <p class="desc">for → if → for → if → for. Very deep nesting.</p>
+    <div class="row"><span class="label">Source:</span> <span class="target" id="deep-mix-src">[[1,2],[3,4]]</span></div>
+    <div class="row"><span class="label">Target:</span> <span class="target target-block" id="deep-mix-target">(empty)</span></div>
+    <button click='[
+      ["setText", "#deep-mix-target", ""],
+      ["for", "row", [[1,2],[3,4]], [
+        ["if", "{ index * 1 == 0 }", [
+          ["for", "cell", "{ row }", [
+            ["if", "{ cell * 1 > 1 }", [
+              ["appendText", "#deep-mix-target", "{ cell }"]
+            ]]
+          ]]
+        ], [
+          ["appendText", "#deep-mix-target", "row2 skipped"]
+        ]]
+      ]]
+    ]'>deep mix</button>
+  </section>
+
+  <!-- ── for with restore ───────────────────────────────── -->
+  <section>
+    <h2>13. for restores outer var</h2>
+    <p class="desc">The outer "n" must be preserved after the for loop.</p>
+    <div class="row"><span class="label">Input:</span> <input id="for-restore-input" type="text" value="outer-val"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target target-block" id="for-restore-target">(empty)</span></div>
+    <button click='[
+      ["getValue", "#for-restore-input", "n"],
+      ["for", "n", [1, 2, 3], [
+        ["appendText", "#for-restore-target", "{ n } "]
+      ]],
+      ["appendText", "#for-restore-target", "| after: { n }"]
+    ]'>check restore</button>
+  </section>
+
+  <!-- ── if/elif/else chained twice ─────────────────────── -->
+  <section>
+    <h2>14. Two if-chains in a row</h2>
+    <p class="desc">After the first chain finishes, a second chain should start cleanly.</p>
+    <div class="row"><span class="label">Input:</span> <input id="chain-input" type="text" value="7"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target target-block" id="chain-target">(empty)</span></div>
+    <button click='[
+      ["getValue", "#chain-input", "n"],
+      ["if", "{ n * 1 > 5 }", [
+        ["appendText", "#chain-target", "first: big | "]
+      ], [
+        ["appendText", "#chain-target", "first: small | "]
+      ]],
+      ["if", "{ n * 1 > 10 }", [
+        ["appendText", "#chain-target", "second: huge | "]
+      ], [
+        ["appendText", "#chain-target", "second: normal | "]
+      ]]
+    ]'>two chains</button>
+  </section>
+
   <!-- ── Errors ──────────────────────────────────────────── -->
   <section>
-    <h2>Errors (expected)</h2>
+    <h2>15. Errors (expected)</h2>
+    <p class="desc">Should report to console and continue.</p>
     <div class="row"><span class="label">Target:</span> <span class="target" id="err-target">(empty)</span></div>
     <button click='[
       ["elif", "{ true }", [["setText", "#err-target", "x"]]]
@@ -168,6 +326,13 @@
     ]'>else without if</button>
     <button click='["if", "{ true }"]'>if without body</button>
     <button click='["for", "i", "not-an-array", [["setText", "#err-target", "x"]]]'>for with invalid source</button>
+    <button click='[
+      ["for", "i", [1,2], [
+        ["for", "j", [3,4], [
+          ["setText", "#err-target", "{ i }{ j }"]
+        ]]
+      ]]
+    ]'>nested for (should work)</button>
   </section>
 
   <script type="module" src="./setup.js"></script>

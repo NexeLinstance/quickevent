@@ -36,7 +36,7 @@
     ]'>three steps, 1s apart</button>
     <button click='[
       ["setText", "#u1-target", "fast"],
-      ["wait", 100],
+      ["wait", 1000],
       ["setText", "#u1-target", "fast done"]
     ]'>100ms wait</button>
   </section>
@@ -56,8 +56,8 @@
     ["then"],
     ["setText", "#u2-b", "B (waits for A)",1000],
     ["then"],
-    ["setText", "#u2-c", "C (waits for B)"],
-    ["setText", "#u2-d", "D (runs immediately, async with A)"]
+    ["setText", "#u2-c", "C (waits for B)",1000],
+    ["setText", "#u2-d", "D (runs immediately, async with A)",1000]
   ]'>A -> B -> C || D</button>
 </section>
 

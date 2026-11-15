@@ -5,7 +5,9 @@ import { normalizeError } from './errors.js';
 
 export async function runEffects(effects, ctx) {
   const list = Array.isArray(effects[0]) ? effects : [effects];
-  let waitForPrev = false;
+
+  let pending = [];
+  let needAwaitPrev = false;
   let prevPromise = null;
 
   for (let i = 0; i < list.length; i++) {
@@ -25,9 +27,8 @@ export async function runEffects(effects, ctx) {
     const [name, ...rawArgs] = effect;
     const commandInfo = { name, index: i };
 
-    // ── then ───────────────────────────────────────────────
     if (name === 'then') {
-      waitForPrev = true;
+      needAwaitPrev = true;
       continue;
     }
 
@@ -36,47 +37,73 @@ export async function runEffects(effects, ctx) {
       desc = ctx.registry.require(name);
     } catch (err) {
       ctx.report(err, { command: commandInfo });
+      continue;
+    }
+
+    // ── wait: special case ─────────────────────────────────
+    if (name === 'wait') {
+      if (pending.length) {
+        await Promise.all(pending);
+        pending = [];
+      }
+      needAwaitPrev = false;
+
+      let resolvedArgs;
+      try {
+        resolvedArgs = await resolveAll(rawArgs, ctx);
+      } catch (err) {
+        ctx.report(err, { command: commandInfo });
+        continue;
+      }
+      if (desc.schema) {
+        const schemaErr = validateSafe(name, desc.schema, resolvedArgs);
+        if (schemaErr) {
+          ctx.report(schemaErr, { command: commandInfo });
+          continue;
+        }
+      }
+      try {
+        await desc.run(ctx, resolvedArgs);
+      } catch (err) {
+        ctx.report(err, { command: commandInfo });
+      }
       prevPromise = Promise.resolve();
-      waitForPrev = false;
       continue;
     }
 
     // ── flow ───────────────────────────────────────────────
     if (desc.kind === 'flow') {
-      const exec = async () => {
+      if (needAwaitPrev && prevPromise) {
+        await prevPromise;
+      }
+      needAwaitPrev = false;
+
+      const promise = (async () => {
         try {
           await desc.run(ctx, rawArgs, {
-            runBody: body => runEffects(body, ctx),
+            runBody: body => runEffects(body, {
+              ...ctx,
+              ifStack: [...ctx.ifStack],
+              loopStack: [...ctx.loopStack],
+            }),
           });
         } catch (err) {
           ctx.report(err, { command: commandInfo });
         }
-      };
+      })();
 
-      let promise;
-      if (waitForPrev && prevPromise) {
-        promise = (async () => {
-          await prevPromise;
-          await exec();
-        })();
-      } else {
-        promise = exec();
-      }
       prevPromise = promise;
-      waitForPrev = false;
+      await promise;
       continue;
     }
 
     // ── source ─────────────────────────────────────────────
-    // Sources must be awaited immediately, because they modify ctx.vars.
     if (desc.kind === 'source') {
       let resolvedArgs;
       try {
         resolvedArgs = await resolveSourceArgs(rawArgs, ctx);
       } catch (err) {
         ctx.report(err, { command: commandInfo });
-        prevPromise = Promise.resolve();
-        waitForPrev = false;
         continue;
       }
 
@@ -84,24 +111,25 @@ export async function runEffects(effects, ctx) {
         const schemaErr = validateSafe(name, desc.schema, resolvedArgs);
         if (schemaErr) {
           ctx.report(schemaErr, { command: commandInfo });
-          prevPromise = Promise.resolve();
-          waitForPrev = false;
           continue;
         }
       }
 
-      if (waitForPrev && prevPromise) {
+      if (needAwaitPrev && prevPromise) {
         await prevPromise;
       }
+      needAwaitPrev = false;
 
-      try {
-        await desc.resolve(ctx, resolvedArgs);
-      } catch (err) {
-        ctx.report(err, { command: commandInfo });
-      }
+      const promise = (async () => {
+        try {
+          await desc.resolve(ctx, resolvedArgs);
+        } catch (err) {
+          ctx.report(err, { command: commandInfo });
+        }
+      })();
 
-      prevPromise = Promise.resolve();
-      waitForPrev = false;
+      prevPromise = promise;
+      await promise;
       continue;
     }
 
@@ -111,8 +139,6 @@ export async function runEffects(effects, ctx) {
       resolvedArgs = await resolveAll(rawArgs, ctx);
     } catch (err) {
       ctx.report(err, { command: commandInfo });
-      prevPromise = Promise.resolve();
-      waitForPrev = false;
       continue;
     }
 
@@ -120,17 +146,16 @@ export async function runEffects(effects, ctx) {
       const schemaErr = validateSafe(name, desc.schema, resolvedArgs);
       if (schemaErr) {
         ctx.report(schemaErr, { command: commandInfo });
-        prevPromise = Promise.resolve();
-        waitForPrev = false;
         continue;
       }
     }
 
-    // DO NOT extract delay from args here. 
-    // The command itself knows which arg is the delay (e.g. setText has delay as 3rd arg).
-    // We just pass all args to the command.
+    if (needAwaitPrev && prevPromise) {
+      await prevPromise;
+    }
+    needAwaitPrev = false;
 
-    const execute = async () => {
+    const promise = (async () => {
       try {
         const result = desc.run(ctx, resolvedArgs);
         if (result instanceof Promise) {
@@ -139,26 +164,17 @@ export async function runEffects(effects, ctx) {
       } catch (err) {
         ctx.report(err, { command: commandInfo });
       }
-    };
+    })();
 
-    let promise;
-    if (waitForPrev && prevPromise) {
-      promise = (async () => {
-        await prevPromise;
-        await execute();
-      })();
-    } else {
-      promise = execute();
-    }
-
+    pending.push(promise);
     prevPromise = promise;
-    waitForPrev = false;
   }
 
-  if (prevPromise) await prevPromise;
+  if (pending.length) {
+    await Promise.all(pending);
+  }
 }
 
 export async function runEvent(effects, ctx) {
   await runEffects(effects, ctx);
-  await ctx.scheduler.flush();
 }

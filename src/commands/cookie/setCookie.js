@@ -22,7 +22,6 @@ export default {
       expires: 0,
       path: '/',
       domain: '',
-      secure: true,
       samesite: 'lax',
       partitioned: false,
       ...options
@@ -58,8 +57,10 @@ export default {
     const ss = SAMESITE_MAP[String(opts.samesite || 'lax').toLowerCase()];
     if (!ss) throw new Error('setCookie: invalid samesite');
     
-    // Secure (Forced on HTTPS and for SameSite=None)
-    const secure = opts.secure || window.location.protocol === 'https:' || ss === 'None' || opts.partitioned;
+    // Secure: explicit option wins, otherwise auto-detect.
+    // SameSite=None requires Secure by spec.
+    const explicitSecure = opts.secure === true || opts.secure === 'true';
+    const secure = explicitSecure || window.location.protocol === 'https:' || ss === 'None' || opts.partitioned;
     if (secure) cookieStr += '; Secure';
     
     cookieStr += `; SameSite=${ss}`;

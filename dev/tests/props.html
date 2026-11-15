@@ -74,9 +74,10 @@
       ["setText", "#p4-out", ["getAttr", "#p4-target", "data-x"]]
     ]'>add then read (should be empty string)</button>
     <button click='[
-      ["removeProps", "#p4-target", "data-x"],
-      ["setText", "#p4-out", ["getAttr", "#p4-target", "data-x"]]
-    ]'>remove then read (should be undefined)</button>
+  ["removeProps", "#p4-target", "data-x"],
+  ["getAttr", "#p4-target", "data-x", "v"],
+  ["setText", "#p4-out", "attr = { v }"]
+]'>remove then read (attr should be empty)</button>
   </section>
 
   <!-- ── Errors ──────────────────────────────────────────── -->

@@ -16,7 +16,7 @@ export function init(options = {}) {
   return { registry, reporter };
 }
 
-// Auto-init if used via <script> directly.
-if (typeof window !== 'undefined') {
+// Auto-init if used via <script> directly. Skip if already initialized.
+if (typeof window !== 'undefined' && !window.QE) {
   window.QE = init();
 }

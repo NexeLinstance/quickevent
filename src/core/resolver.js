@@ -21,24 +21,24 @@ export async function resolveArg(arg, ctx) {
 
     // Is it a source command? (e.g. ["getText", "#el"])
     if (typeof head === 'string' && ctx.registry.has(head)) {
-  const desc = ctx.registry.get(head);
+      const desc = ctx.registry.get(head);
 
-  if (desc.kind !== 'source') {
-    throw createError('E011', { name: head });
-  }
+      if (desc.kind !== 'source') {
+        throw createError('E011', { name: head });
+      }
 
-  // For source commands, do not eagerly render template strings
-  // in their arguments. The source itself decides when to render.
-  const sourceArgs = await resolveSourceArgs(arg.slice(1), ctx);
+      // For source commands, do not eagerly render template strings
+      // in their arguments. The source itself decides when to render.
+      const sourceArgs = await resolveSourceArgs(arg.slice(1), ctx);
 
-  const value = await desc.resolve(ctx, sourceArgs);
+      const value = await desc.resolve(ctx, sourceArgs);
 
-  if (value === undefined) {
-    throw createError('E012', { name: head });
-  }
+      if (value === undefined) {
+        throw createError('E012', { name: head });
+      }
 
-  return value;
-}
+      return value;
+    }
 
     // Literal array — resolve each item.
     const out = [];
@@ -80,27 +80,46 @@ export async function resolveAll(args, ctx) {
   return out;
 }
 
-
 // Resolve arguments for a source command.
-// Template strings are left as-is (not rendered), because sources
-// may need to render them after they have set their own aliases.
+//
+// Source commands are special because they may need to render their own
+// template strings (e.g. the `expr` argument of getText/getAttr/getValue).
+// The rule we follow:
+//   - arg[0] (the selector) is ALWAYS rendered — it's a CSS selector,
+//     and users may want to build it from variables: "{scoping} p".
+//   - The LAST string argument that contains "{" is kept raw — it's
+//     almost certainly the `expr` argument, which the source command
+//     will render itself against its own aliases.
+//   - Everything else is resolved normally (nested sources are resolved
+//     fully; objects/arrays are resolved recursively but kept raw for
+//     template strings).
 export async function resolveSourceArgs(args, ctx) {
   const out = [];
-  for (const arg of args) {
-    // Keep template strings raw for sources.
-    if (typeof arg === 'string' && arg.includes('{')) {
+  const lastIdx = args.length - 1;
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    const isLast = i === lastIdx;
+
+    // 1. First argument (selector) — always render.
+    if (i === 0 && typeof arg === 'string' && arg.includes('{')) {
+      out.push(await resolveArg(arg, ctx));
+      continue;
+    }
+
+    // 2. Last string template — keep raw (likely the `expr` argument).
+    if (isLast && typeof arg === 'string' && arg.includes('{')) {
       out.push(arg);
       continue;
     }
 
-    // Nested sources are still resolved.
+    // 3. Nested source — resolve fully.
     if (Array.isArray(arg) && typeof arg[0] === 'string' && ctx.registry.has(arg[0])) {
       out.push(await resolveArg(arg, ctx));
       continue;
     }
 
-    // Anything else (literals, arrays, objects) — resolve normally,
-    // but be careful: nested strings inside them should also remain raw.
+    // 4. Everything else — resolve raw (template strings stay raw).
     out.push(await resolveArgRaw(arg, ctx));
   }
   return out;

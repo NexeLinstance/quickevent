@@ -1,8 +1,8 @@
 // src/commands/util/wait.js
-
 export default {
   name: 'wait',
   kind: 'flow',
+  blocking: true,
   schema: ['number'],
   async run(ctx, [ms]) {
     await new Promise(r => setTimeout(r, ms));

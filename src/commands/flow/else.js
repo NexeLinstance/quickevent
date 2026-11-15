@@ -5,16 +5,14 @@ export default {
   kind: 'flow',
   schema: ['array'],
   async run(ctx, [body], { runBody }) {
-    if (!ctx.branch || !ctx.branch.active) {
+    const frame = ctx.ifStack[ctx.ifStack.length - 1];
+    if (!frame || !frame.active) {
       throw { code: 'E021' };
     }
-    if (ctx.branch.ran) {
-      // Mark chain as done
-      ctx.branch.active = false;
-      return;
-    }
 
-    await runBody(body);
-    ctx.branch.active = false;
+    if (!frame.ran) {
+      await runBody(body);
+    }
+    frame.active = false;
   },
 };

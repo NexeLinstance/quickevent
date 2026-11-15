@@ -3,22 +3,17 @@ import { normalizeError } from './errors.js';
 
 // ─────────────────────────────────────────────────────────────
 // Sinks
-// A sink is a function that receives a reported QEError.
-// Sinks never throw; if they do, the reporter swallows it.
 // ─────────────────────────────────────────────────────────────
 
 export function consoleSink(error) {
   const label = `[QE ${error.code}] ${error.phase}`;
 
-  // خط اصلی
   console.error(`${label} — ${error.message}`);
 
-  // پیشنهاد (hint)
   if (error.hint) {
     console.info(`  hint: ${error.hint}`);
   }
 
-  // کانتکست
   if (error.command) {
     console.info(`  command: "${error.command.name}" (index ${error.command.index})`);
   }
@@ -30,7 +25,6 @@ export function consoleSink(error) {
     console.info(`  attribute: ${error.attribute}`);
   }
 
-  // خطای اصلی در صورت وجود
   if (error.cause) {
     console.groupCollapsed('  cause:');
     console.error(error.cause);
@@ -39,7 +33,6 @@ export function consoleSink(error) {
 }
 
 export function memorySink(error) {
-  // فقط برای تست: خطاها در آرایه‌ای روی window ذخیره می‌شوند
   if (typeof window !== 'undefined') {
     window.__QE_ERRORS__ = window.__QE_ERRORS__ || [];
     window.__QE_ERRORS__.push(error);
@@ -51,17 +44,14 @@ export function memorySink(error) {
 // ─────────────────────────────────────────────────────────────
 
 export class Reporter {
-  constructor({ sinks = [consoleSink], dedupWindow = 3000 } = {}) {
+  constructor({ sinks = [consoleSink], dedupWindow = 3000, maxSeen = 1000 } = {}) {
     this.sinks = sinks;
     this.dedupWindow = dedupWindow;
+    this.maxSeen = maxSeen;
     this._seen = new Map(); // key → lastTimestamp
+    this._reportCount = 0;
   }
 
-  /**
-   * 
-   * @param {QEError|Error|unknown} err
-   * @param {object} ctx  
-   */
   report(err, ctx = {}) {
     const qeError = normalizeError(err, ctx);
 
@@ -71,9 +61,14 @@ export class Reporter {
       try {
         sink(qeError);
       } catch (sinkErr) {
-    
         console.warn('[QE] Sink failed:', sinkErr);
       }
+    }
+
+    this._reportCount++;
+    // Clean up expired entries periodically, or when the map grows too large.
+    if (this._reportCount % 100 === 0 || this._seen.size > this.maxSeen) {
+      this._cleanup();
     }
   }
 
@@ -97,8 +92,18 @@ export class Reporter {
     return false;
   }
 
+  _cleanup() {
+    const cutoff = Date.now() - this.dedupWindow;
+    for (const [key, timestamp] of this._seen) {
+      if (timestamp < cutoff) {
+        this._seen.delete(key);
+      }
+    }
+  }
+
   clear() {
     this._seen.clear();
+    this._reportCount = 0;
     if (typeof window !== 'undefined') {
       window.__QE_ERRORS__ = [];
     }

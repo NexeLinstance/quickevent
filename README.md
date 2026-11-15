@@ -25,7 +25,9 @@
 ```html
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent-markers.css">
 ```
-
+```python
+x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js")
+```
 ### ۲. در Nexelpy (پایتون)
 
 در Nexelpy، کافی است اسکریپت QuickEvent را به تگ `head` اضافه کنید و از اتریبیوت‌های ایونت (مثل `click`) در کامپوننت‌های خود استفاده کنید:
@@ -38,7 +40,7 @@ async def home():
     x = View(__file__, title="QuickEvent Demo")
     
     # 1. بارگذاری QuickEvent
-    x.script(parent=x.HEAD_tag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js")
+    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js")
     
     # 2. استفاده از کامندها در ایونت‌ها
     x.button("کلیک کنید", click=["setText", "#message", "سلام دنیا! 🎉"])

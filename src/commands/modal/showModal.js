@@ -1,5 +1,16 @@
 // src/commands/modal/showModal.js
-import { ANIMATIONS, applyReset, getState, setState, animateBackdrop, closeModal } from './modalHelper.js';
+import { ANIMATIONS, applyReset, getState, setState, closeModal } from './modalHelper.js';
+
+function unbindAutoHide(el) {
+  if (el.__qeClickHandler) {
+    el.removeEventListener('click', el.__qeClickHandler);
+    delete el.__qeClickHandler;
+  }
+  if (el.__qeCancelHandler) {
+    el.removeEventListener('cancel', el.__qeCancelHandler);
+    delete el.__qeCancelHandler;
+  }
+}
 
 export default {
   name: 'showModal',
@@ -14,8 +25,13 @@ export default {
     els.forEach((el) => {
       if (!(el instanceof HTMLDialogElement)) return;
 
+      // Debounce: ignore if an animation is currently running.
+      if (el._qeAnimating) return;
+
       const state = getState(el);
       if (state === 'opening' || (el.open && state === 'open')) return;
+
+      el._qeAnimating = true;
 
       const bg = backdropStyle.backgroundColor ?? 'rgba(0,0,0,0.5)';
       const filter = backdropStyle.filter ?? 'none';
@@ -38,7 +54,10 @@ export default {
           el._qeBackdropAnim.finished
         ]).then(() => {
           if (getState(el) === 'opening') setState(el, 'open');
-        }).catch(() => {});
+          el._qeAnimating = false;
+        }).catch(() => {
+          el._qeAnimating = false;
+        });
         return;
       }
 
@@ -54,6 +73,12 @@ export default {
 
       if (preset.in) {
         el._qeFadeAnim = el.animate(preset.in, { duration, delay, fill: 'forwards', easing: 'ease' });
+      } else {
+        el.getAnimations().forEach(a => {
+          if (a.effect && a.effect.pseudoElement) return;
+          a.cancel();
+        });
+        el._qeFadeAnim = null;
       }
 
       Promise.all([
@@ -61,20 +86,37 @@ export default {
         el._qeBackdropAnim.finished
       ]).then(() => {
         if (getState(el) === 'opening') setState(el, 'open');
-      }).catch(() => {});
+        el._qeAnimating = false;
+      }).catch(() => {
+        el._qeAnimating = false;
+      });
+
+      // Clean up old listeners before adding new ones.
+      unbindAutoHide(el);
 
       if (autoHide) {
-        el.addEventListener('click', function handler(e) {
+        const clickHandler = (e) => {
+          if (el._qeAnimating) return;  // debounce
           if (e.target === el) {
             closeModal(el, 0, duration, type);
           }
-        });
-        el.addEventListener('cancel', function cancelHandler(e) {
+        };
+        const cancelHandler = (e) => {
           e.preventDefault();
+          if (el._qeAnimating) return;  // debounce
           closeModal(el, 0, duration, type);
-        });
+        };
+        el.addEventListener('click', clickHandler);
+        el.addEventListener('cancel', cancelHandler);
+        el.__qeClickHandler = clickHandler;
+        el.__qeCancelHandler = cancelHandler;
       } else {
-        el.addEventListener('cancel', (e) => e.preventDefault());
+        const cancelHandler = (e) => {
+          e.preventDefault();
+          if (el._qeAnimating) return;
+        };
+        el.addEventListener('cancel', cancelHandler);
+        el.__qeCancelHandler = cancelHandler;
       }
     });
   },

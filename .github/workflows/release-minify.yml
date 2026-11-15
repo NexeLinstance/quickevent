@@ -28,7 +28,6 @@ jobs:
       - name: Download DOMPurify
         run: |
           mkdir -p dist/lib
-          # دانلود مستقیم آخرین نسخه از jsDelivr (بسیار مطمئن‌تر از API گیت‌هاب)
           echo "Downloading DOMPurify from jsDelivr..."
           curl -fL -o dist/lib/purify.min.js "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"
 

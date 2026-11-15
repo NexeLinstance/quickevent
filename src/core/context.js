@@ -58,15 +58,18 @@ export function createContext(options = {}) {
 
     // Execution state
     vars: Object.create(null),              // alias store (from getters with alias, assignments)
-    branch: { ran: false },// shared state for if/elif/else chain
-    loop: null,            // set during "for"
-    response: null,        // last AJAX response
-    ok: true,              // last AJAX success flag
-    statusCode: null,      // last AJAX status code
-    statusMessage: null,   // last AJAX status message
+    ifStack: [],                            // stack of { ran, active } for if/elif/else chains
+    loopStack: [],                          // stack of {} for nested "for" loops
+    response: null,                         // last AJAX response
+    ok: true,                               // last AJAX success flag
+    statusCode: null,                       // last AJAX status code
+    statusMessage: null,                    // last AJAX status message
 
     // Tick state (filled only inside a tick handler)
     tick: null,
+
+    // Pending ajax promise (for ajaxSuccess / ajaxError)
+    pendingAjax: null,
 
     // ── Convenience API for command authors ──
 
@@ -80,10 +83,10 @@ export function createContext(options = {}) {
     },
 
     resetBranch() {
-      this.branch = { ran: false };
+      this.ifStack = [];
     },
 
-        // ── DOM helpers (commands must not call document directly) ──
+    // ── DOM helpers (commands must not call document directly) ──
     dom: {
       query(selector) {
         if (selector instanceof Element) return [selector];
@@ -104,7 +107,7 @@ export function createContext(options = {}) {
         return Promise.resolve();
       },
     },
-    
+
     // Called by flow commands (if/elif/else) and "for"
     runBody(body, subContext = {}) {
       // Imported lazily to avoid circular dependency at module load time.

@@ -86,7 +86,11 @@
       ["setText", "#h6-out", "count = { count(vals) }"]
     ]'>count(vals)</button>
   </section>
-
+<button click='["setHtml", "#out", 123]'>setHtml number</button>
+<button click='["setHtml", "#out", true]'>setHtml boolean</button>
+<button click='["setHtml", "#out", "<b>bold</b>"]'>setHtml html</button>
+<button click='["setHtmlTrust", "#out", 123]'>setHtmlTrust number</button>
+<p id="out"></p>
   <!-- ── Errors ──────────────────────────────────────────── -->
   <section>
     <h2>Errors (expected)</h2>

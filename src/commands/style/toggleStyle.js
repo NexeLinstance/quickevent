@@ -20,13 +20,19 @@ export default {
     const parsed = parseOne(style);
     if (!parsed || !parsed.key) return;
 
+    if (parsed.value == null) {
+      throw new Error(
+        `toggleStyle: value is required (e.g. "color:red"), got "${style}"`
+      );
+    }
+
     return ctx.dom.each(
       selector,
       el => {
         const current = el.style.getPropertyValue(parsed.key);
         if (current) {
           el.style.removeProperty(parsed.key);
-        } else if (parsed.value != null) {
+        } else {
           el.style.setProperty(parsed.key, parsed.value);
         }
       },

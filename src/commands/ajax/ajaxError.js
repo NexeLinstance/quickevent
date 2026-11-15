@@ -1,13 +1,15 @@
 // src/commands/ajax/ajaxError.js
-
 export default {
   name: 'ajaxError',
   kind: 'flow',
+  blocking: true,
   schema: ['array', 'object?'],
   async run(ctx, [body, customMessages = {}], { runBody }) {
+    if (ctx.pendingAjax) {
+      await ctx.pendingAjax;
+      ctx.pendingAjax = null;
+    }
     if (!ctx.ok) {
-      // If the backend didn't send a statusMessage (e.g. network error),
-      // use defaults or custom messages.
       if (!ctx.statusMessage || ctx.statusMessage === '') {
         const defaults = {
           0: 'Connection failed. Check your internet.',

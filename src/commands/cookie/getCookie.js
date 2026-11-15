@@ -1,6 +1,20 @@
 // src/commands/cookie/getCookie.js
 import { renderTemplate } from '../../expr/template.js';
 
+function getCookieValue(key) {
+  const encodedKey = encodeURIComponent(key);
+  const cookies = document.cookie.split(';');
+  for (const c of cookies) {
+    const eq = c.indexOf('=');
+    if (eq === -1) continue;
+    const name = c.slice(0, eq).trim();
+    if (name === encodedKey) {
+      return c.slice(eq + 1);
+    }
+  }
+  return null;
+}
+
 export default {
   name: 'getCookie',
   kind: 'source',
@@ -20,12 +34,8 @@ export default {
 
     if (!key) return undefined;
 
-    const encodedKey = encodeURIComponent(key);
-    const match = document.cookie.match(
-      new RegExp(`(?:^|;\\s*)${encodedKey}=([^;]*)`)
-    );
-
-    const value = match ? decodeURIComponent(match[1]) : '';
+    const raw = getCookieValue(key);
+    const value = raw != null ? decodeURIComponent(raw) : '';
 
     if (alias) ctx.vars[alias] = value;
 

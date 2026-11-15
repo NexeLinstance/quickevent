@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · Template Selector (full test)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 32px; padding: 16px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+    h2 { margin: 0 0 6px; font-size: 1.1rem; }
+    p.desc { color: #666; margin: 0 0 12px; font-size: 0.9rem; }
+    button { margin: 4px 6px 4px 0; padding: 6px 12px; cursor: pointer; }
+    code { background: #eee; padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+    .row { margin: 6px 0; }
+    .label { display: inline-block; min-width: 110px; color: #555; }
+    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 180px; font-family: monospace; }
+    input { padding: 4px 8px; width: 260px; margin: 4px 0; }
+    .box-a { background: #eef; padding: 8px; border: 1px solid #88c; border-radius: 4px; margin: 4px 0; }
+    .box-b { background: #fee; padding: 8px; border: 1px solid #c88; border-radius: 4px; margin: 4px 0; }
+    .inner { background: #fff; padding: 4px 8px; display: inline-block; }
+    .scope-a { background: #efe; padding: 6px; border: 1px solid #8c8; border-radius: 4px; margin: 4px 0; }
+    .scope-b { background: #ffe; padding: 6px; border: 1px solid #cc8; border-radius: 4px; margin: 4px 0; }
+    .marker { background: #ddd; padding: 2px 6px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Template Selector — Full Test</h1>
+  <p>Each section is self-contained. Click the button and compare the output to the expected value.</p>
+
+  <!-- ═══════════════════════════════════════════════════════
+       FIXTURES
+       ═══════════════════════════════════════════════════════ -->
+  <div class="box-a"><span class="inner">A-inner</span></div>
+  <div class="box-b"><span class="inner">B-inner</span></div>
+
+  <div id="scope-a" class="scope-a"><span class="marker">scope-A marker</span></div>
+  <div id="scope-b" class="scope-b"><span class="marker">scope-B marker</span></div>
+
+  <span class="attr-src" title="alpha">src-A</span>
+  <span class="attr-src" title="beta">src-B</span>
+
+  <input id="in-a" type="text" value="value-a">
+  <input id="in-b" type="text" value="value-b">
+
+  <!-- ═══════════════════════════════════════════════════════
+       1. Literal selector
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>1. Literal selector</h2>
+    <p class="desc">Expected: <code>text = A-inner</code></p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out1">(empty)</span></div>
+    <button click='[
+      ["getText", ".box-a .inner", "v"],
+      ["setText", "#out1", "text = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       2. Selector from input (template)
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>2. Selector from input</h2>
+    <p class="desc">
+      Change the input to <code>.box-a</code> or <code>.box-b</code> and run.
+      Expected: <code>text = A-inner</code> or <code>text = B-inner</code>
+    </p>
+    <div class="row"><span class="label">Input:</span> <input id="sel-input" type="text" value=".box-a"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out2">(empty)</span></div>
+    <button click='[
+      ["getValue", "#sel-input", "sel"],
+      ["getText", "{ sel } .inner", "v"],
+      ["setText", "#out2", "text = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       3. Selector with dynamic prefix (id)
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>3. Selector with dynamic prefix</h2>
+    <p class="desc">
+      Change the input to <code>#scope-a</code> or <code>#scope-b</code> and run.
+      Expected: <code>text = scope-A marker</code> or <code>text = scope-B marker</code>
+    </p>
+    <div class="row"><span class="label">Input:</span> <input id="prefix-input" type="text" value="#scope-a"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out3">(empty)</span></div>
+    <button click='[
+      ["getValue", "#prefix-input", "prefix"],
+      ["getText", "{ prefix } .marker", "v"],
+      ["setText", "#out3", "text = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       4. Multi-element selector
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>4. Multi-element selector</h2>
+    <p class="desc">
+      Expected: <code>count = 2</code>
+    </p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out4">(empty)</span></div>
+    <button click='[
+      ["getText", ".inner", "v"],
+      ["setText", "#out4", "count = { count(v) }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       5. getAttr with literal selector
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>5. getAttr with literal selector</h2>
+    <p class="desc">Expected: <code>titles = alpha,beta</code></p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out5">(empty)</span></div>
+    <button click='[
+      ["getAttr", ".attr-src", "title", "vals"],
+      ["setText", "#out5", "titles = { vals }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       6. getAttr with template selector
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2 id="sec6" data-scoping="666">6. scoping</h2>
+    <p id="desc" scoping="[data-scoping=123]"> </p>
+    <!-- <div class="row"><span class="label">Input:</span> <input id="attr-sel-input" type="text" value=".box-a" ></div> -->
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out6">(empty)</span></div>
+    <button click='[
+      ["getAttr", "#desc", "scoping","scp"],
+      ["setText", "#out6", "{scp} p"]
+    ]'>run</button>
+
+    <button click='[
+      ["getAttr", "#sec6", "data-scoping","scp"],
+      ["setText", "#out6", "[data-scoping={scp}] p"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       7. getValue with literal selector
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>7. getValue with literal selector</h2>
+    <p class="desc">Expected: <code>value = value-a</code></p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out7">(empty)</span></div>
+    <button click='[
+      ["getValue", "#in-a", "v"],
+      ["setText", "#out7", "value = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       8. getValue with template selector
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>8. getValue with template selector</h2>
+    <p class="desc">
+      Change the input to <code>#in-a</code> or <code>#in-b</code> and run.
+      Expected: <code>value = value-a</code> or <code>value = value-b</code>
+    </p>
+    <div class="row"><span class="label">Input:</span> <input id="val-sel-input" type="text" value="#in-a"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out8">(empty)</span></div>
+    <button click='[
+      ["getValue", "#val-sel-input", "sel"],
+      ["getValue", "{ sel }", "v"],
+      ["setText", "#out8", "value = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       9. expr argument (last template stays raw)
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>9. expr argument</h2>
+    <p class="desc">
+      Expected: <code>upper = A-INNER</code> and <code>prefixed = prefix: A-inner</code>
+    </p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out9">(empty)</span></div>
+    <button click='[
+      ["getText", ".box-a .inner", "v", "{ upperCase(v) }"],
+      ["setText", "#out9", "upper = { v }"]
+    ]'>expr = upper</button>
+    <button click='[
+      ["getText", ".box-a .inner", "v", "prefix: { v }"],
+      ["setText", "#out9", "prefixed = { v }"]
+    ]'>expr = mixed</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       10. Template selector + expr
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>10. Template selector + expr</h2>
+    <p class="desc">
+      Change the input to <code>.box-a</code> or <code>.box-b</code> and run.
+      Expected: <code>upper = A-INNER</code> or <code>upper = B-INNER</code>
+    </p>
+    <div class="row"><span class="label">Input:</span> <input id="both-input" type="text" value=".box-a"></div>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out10">(empty)</span></div>
+    <button click='[
+      ["getValue", "#both-input", "sel"],
+      ["getText", "{ sel } .inner", "v", "{ upperCase(v) }"],
+      ["setText", "#out10", "upper = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       11. Selector with nested source
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>11. Selector with nested source</h2>
+    <p class="desc">
+      The selector itself is a nested source. Expected: <code>text = A-inner</code>
+    </p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="out11">(empty)</span></div>
+    <button click='[
+      ["getText", ["getValue", "#sel-input"], "v"],
+      ["setText", "#out11", "text = { v }"]
+    ]'>run</button>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════
+       12. Errors (expected — console only)
+       ═══════════════════════════════════════════════════════ -->
+  <section>
+    <h2>12. Errors (expected)</h2>
+    <p class="desc">These will log errors to the console. That's intentional.</p>
+    <div class="row"><span class="label">Target:</span> <span class="target" id="err">(empty)</span></div>
+    <button click='[
+      ["getText", "{ missing } .inner", "v"],
+      ["setText", "#err", "v = { v }"]
+    ]'>unknown identifier in selector</button>
+    <button click='[
+      ["getValue", "#sel-input", "sel"],
+      ["getText", "{ sel } .no-such-thing", "v"],
+      ["setText", "#err", "v = { v }"]
+    ]'>selector matches nothing</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

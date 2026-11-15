@@ -31,11 +31,11 @@
   <section>
     <h2>showModal · basic</h2>
     <p class="desc">Show a modal dialog. Click outside or press Escape to close.</p>
-    <button click='["showModal", "#modal1", {}, true, 0, 1000]'>show modal</button>
+    <button click='["showModal", "#modal1", {}, true, 0, 1000,"slideLeft"]'>show modal</button>
     <button click='["hideModal", "#modal1"]'>hide modal</button>
 
     <dialog id="modal1" >
-      <div style="background-color: aqua;">
+      <div style="background-color: rgb(76, 79, 79);width: 50vw;height: 50vh;">
         <h3>Hello</h3>
         <p>This is a modal.</p>
         <input type="text" placeholder="Type something..." autofocus>
@@ -46,16 +46,16 @@
   <!-- ── Custom backdrop ─────────────────────────────────── -->
   <section>
     <h2>Custom backdrop</h2>
-    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(255,0,0,0.4)"}, true, 0, 1000]'>
+    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(255,0,0,0.4)"}, true, 0, 300,"zoom"]'>
       red backdrop
     </button>
-    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(0,100,255,0.4)", "filter": "blur(4px)"}, true, 0, 1000]'>
+    <button click='["showModal", "#modal2", {"backgroundColor": "rgba(0,100,255,0.4)", "filter": "blur(4px)"}, true, 0, 300,"slideDown"]'>
       blue backdrop + blur
     </button>
     <button click='["hideModal", "#modal2"]'>hide</button>
 
     <dialog id="modal2">
-      <div>Custom backdrop modal</div>
+      <div style="background-color: rgb(76, 79, 79);width: 50vw;height: 50vh;">Custom backdrop modal</div>
     </dialog>
   </section>
 
@@ -63,11 +63,11 @@
   <section>
     <h2>No auto-hide</h2>
     <p class="desc">autoHide=false; Escape doesn't close. Use hideModal.</p>
-    <button click='["showModal", "#modal3", {}, false, 0, 1000]'>show (no auto-hide)</button>
+    <button click='["showModal", "#modal3", {}, false, 0, 1000,"slideUp"]'>show (no auto-hide)</button>
     <button click='["hideModal", "#modal3",1000]'>hide</button>
 
     <dialog id="modal3">
-      <div>
+      <div  style="background-color: rgb(76, 79, 79);width: 50vw;height: 50vh;">
         <p>No auto-hide. Escape won't close.</p>
         <button click='["hideModal", "#modal3",0,1000]'>close</button>
       </div>
@@ -78,11 +78,11 @@
   <section>
     <h2>Animated</h2>
     <p class="desc">Fade duration 1s.</p>
-    <button click='["showModal", "#modal4", {}, true, 0, 1000]'>show (1s fade)</button>
+    <button click='["showModal", "#modal4", {}, true, 0, 1000,"slideRight"]'>show (1s fade)</button>
     <button click='["hideModal", "#modal4", 0, 1000]'>hide (1s fade)</button>
 
     <dialog id="modal4">
-      <div>Animated modal</div>
+      <div style="background-color: rgb(76, 79, 79);width: 50vw;height: 50vh;">Animated modal</div>
     </dialog>
   </section>
 

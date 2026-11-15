@@ -1,2 +1,2 @@
 // src/version.js
-export const version = '1.3.38';
+export const version = '1.3.39';
