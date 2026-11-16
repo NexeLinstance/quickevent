@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · getElement Test</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+    h2 { margin-bottom: 4px; }
+    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
+    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
+    .row { margin: 8px 0; }
+    .label { display: inline-block; min-width: 100px; color: #555; }
+    .target { background: #fffbe6; padding: 8px 12px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 200px; }
+  </style>
+</head>
+<body>
+  <h1>getElement Command Tests</h1>
+
+  <section>
+    <h2>1. Read Properties</h2>
+    <div class="target" id="my-el" class="box active" style="color: red;">Hello <b>World</b></div>
+    <br>
+    <div class="row"><span class="label">innerText:</span> <span class="target" id="el1">(empty)</span></div>
+    <div class="row"><span class="label">innerHTML:</span> <span class="target" id="el2">(empty)</span></div>
+    <div class="row"><span class="label">className:</span> <span class="target" id="el3">(empty)</span></div>
+    <div class="row"><span class="label">id:</span> <span class="target" id="el4">(empty)</span></div>
+    <div class="row"><span class="label">tagName:</span> <span class="target" id="el5">(empty)</span></div>
+    <div class="row"><span class="label">style.color:</span> <span class="target" id="el6">(empty)</span></div>
+
+    <button click='[
+      ["getElement", "#my-el", "MYEL"],
+      ["setText", "#el1", "{MYEL.innerText}"],
+      ["setText", "#el2", "{MYEL.innerHTML}"],
+      ["setText", "#el3", "{MYEL.className}"],
+      ["setText", "#el4", "{MYEL.id}"],
+      ["setText", "#el5", "{MYEL.tagName}"],
+      ["setText", "#el6", "{MYEL.style.color}"]
+    ]'>Read Properties</button>
+  </section>
+
+  <section>
+    <h2>2. Multiple Elements</h2>
+    <div class="multi-item">A</div>
+    <div class="multi-item">B</div>
+    <div class="multi-item">C</div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="multi-out">(empty)</span></div>
+    <button click='[
+      ["getElement", ".multi-item", "ITEMS"],
+      ["setText", "#multi-out", "Count: {ITEMS.length}"]
+    ]'>Count Multi Elements</button>
+  </section>
+
+  <section>
+    <h2>3. Use in if</h2>
+    <div class="target" id="check-el" data-state="active">Check Me</div>
+    <div class="row"><span class="label">Result:</span> <span class="target" id="if-out">(empty)</span></div>
+    <button click='[
+      ["getElement", "#check-el", "EL"],
+      ["if", "{EL.dataset.state == \"active\"}", [
+        ["setText", "#if-out", "It is active!"]
+      ], [
+        ["setText", "#if-out", "It is NOT active."]
+      ]]
+    ]'>Check Element</button>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@ import modal from './modal/index.js';
 import tick from './tick/index.js';
 import func from './func/index.js';
 import collapse from './collapse/index.js';
+import getElement from './dom/getElement.js';
 
 const commands = [
   ...text,
@@ -35,6 +36,7 @@ const commands = [
   ...tick,
   ...func,
   ...collapse,
+  getElement,
 ];
 
 export default commands;
