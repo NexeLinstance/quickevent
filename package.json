@@ -1,6 +1,6 @@
 {
   "name": "quickevent",
-  "version": "1.3.48",
+  "version": "1.3.49",
   "description": "Attribute-driven command framework for the DOM.",
   "type": "module",
   "main": "src/quickevent.js",
@@ -15,10 +15,16 @@
   ],
   "scripts": {
     "build": "esbuild src/quickevent.js --bundle --minify --format=esm --external:*/purify.min.js --outfile=dist/quickevent.tmp.js && terser dist/quickevent.tmp.js -c passes=3 -m -o dist/quickevent.min.js && rm dist/quickevent.tmp.js",
-    "clean": "rm -rf dist",
-    "test": "echo \"Tests are manual — open dev/tests/index.html\" && exit 0"
+    "build:all": "node build.mjs",
+    "clean": "rm -rf dist"
   },
-  "keywords": ["dom", "events", "attribute-driven", "command", "framework"],
+  "keywords": [
+    "dom",
+    "events",
+    "attribute-driven",
+    "command",
+    "framework"
+  ],
   "license": "MIT",
   "devDependencies": {
     "esbuild": "^0.24.0",
