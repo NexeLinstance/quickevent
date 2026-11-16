@@ -43,7 +43,7 @@
 
 ```html
 <!-- بارگذاری فریم‌ورک -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js"></script>
 
 <button click='["setText", "#message", "سلام دنیا! 🎉"]'>
   کلیک کنید
@@ -62,7 +62,7 @@ async def home():
     x = View(__file__, title="QuickEvent Demo")
     
     # بارگذاری QuickEvent در هد
-    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js")
+    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js")
     
     # استفاده از کامندها مستقیماً در کامپوننت‌های پایتون
     x.button("ثبت نام", click=["setText", "#status", "با موفقیت ثبت شد! ✅"])

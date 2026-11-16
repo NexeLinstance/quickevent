@@ -37,7 +37,7 @@ Simply add the QuickEvent script to your page and define the logic in the `click
 
 ```html
 <!-- Load the framework -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js"></script>
 
 <button click='["setText", "#message", "Hello World! 🎉"]'>
   Click Me
@@ -56,7 +56,7 @@ async def home():
     x = View(__file__, title="QuickEvent Demo")
     
     # Load QuickEvent in the head
-    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@cdn/quickevent.min.js")
+    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js")
     
     # Use commands directly in Python components
     x.button("Register", click=["setText", "#status", "Successfully registered! ✅"])
