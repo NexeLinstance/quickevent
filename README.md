@@ -23,7 +23,7 @@
 **QuickEvent** introduces a new paradigm for front-end development. Instead of writing long JavaScript codes for every button and form and looking for `document.getElementById`, you define your application logic directly in your HTML attributes.
 
 - **🚀 No JS Coding:** All interactions (click, change, scroll) are managed with simple HTML attributes.
-- **🪶 Ultra-Light:** Only 14 KB (excluding DOMPurify) - no need for bundlers (Webpack/Vite) or heavy dependencies.
+- **🪶 Light:** About 60 KB (excluding DOMPurify) - no need for bundlers (Webpack/Vite) or heavy dependencies.
 - **🛡️ Security First:** Built-in use of `DOMPurify` to prevent XSS (Cross-Site Scripting) attacks.
 - **⚙️ Command-Based Architecture:** All operations are performed as a simple, composable list of commands.
 - **🎯 Smart Scoping:** Easily manage repeated components using the `{scopingSelector}` variable (with zero conflicts).
