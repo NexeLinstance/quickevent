@@ -1,2 +1,3 @@
 
 src/core/lib/purify.min.js
+npm run build:all

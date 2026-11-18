@@ -2,6 +2,7 @@
 import { parse } from './parser.js';
 import { evaluate } from './evaluator.js';
 
+// Splits "hello {name}" into [{type:'text',value:'hello '},{type:'expr',value:'name'}].
 export function parseTemplate(str) {
   if (typeof str !== 'string') return [{ type: 'text', value: str }];
   if (!str.includes('{')) return [{ type: 'text', value: str }];
@@ -13,10 +14,26 @@ export function parseTemplate(str) {
   while (i < str.length) {
     if (str[i] === '{') {
       if (current) { parts.push({ type: 'text', value: current }); current = ''; }
-      const end = str.indexOf('}', i + 1);
-      if (end === -1) { current += str.slice(i); break; }
-      parts.push({ type: 'expr', value: str.slice(i + 1, end).trim() });
-      i = end + 1;
+      
+      // Find the matching closing brace, respecting nested braces
+      let depth = 1;
+      let j = i + 1;
+      while (j < str.length && depth > 0) {
+        if (str[j] === '{') depth++;
+        else if (str[j] === '}') depth--;
+        j++;
+      }
+
+      // If no matching brace found, treat the rest as text
+      if (depth > 0) {
+        current += str.slice(i);
+        break;
+      }
+
+      // Extract the content inside the outermost braces
+      const expr = str.slice(i + 1, j - 1).trim();
+      parts.push({ type: 'expr', value: expr });
+      i = j;
       continue;
     }
     current += str[i];
@@ -37,7 +54,7 @@ export function renderTemplate(template, vars, ctx = {}) {
 
   if (parts.length === 1 && parts[0].type === 'expr') {
     const ast = parse(parts[0].value);
-    return evaluate(ast, vars, ctx); 
+    return evaluate(ast, vars, ctx);
   }
 
   let out = '';

@@ -2,127 +2,136 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>QuickEvent · Attr commands</title>
+  <title>QuickEvent · Attribute Commands (Torture Test)</title>
   <style>
-    body { font-family: system-ui, sans-serif; max-width: 820px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
-    section { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-    h2 { margin-bottom: 4px; }
-    p.desc { color: #666; margin-top: 0; margin-bottom: 12px; }
-    button { margin: 4px 4px 4px 0; padding: 6px 12px; cursor: pointer; }
-    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-    .row { margin: 8px 0; }
-    .label { display: inline-block; min-width: 90px; color: #555; }
-    .target { background: #fffbe6; padding: 4px 10px; border: 1px solid #f0e0a0; border-radius: 4px; display: inline-block; min-width: 120px; }
-    [data-state="active"] { background: #cfc; }
-    [data-state="inactive"] { background: #fee; }
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+    h2 { margin-top: 0; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+    p.desc { color: #666; font-size: 0.9rem; margin-bottom: 15px; }
+    button { margin: 4px 8px 4px 0; padding: 6px 12px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+    button:hover { background: #0056b3; }
+    button.danger { background: #dc3545; }
+    button.danger:hover { background: #c82333; }
+    
+    .row { margin: 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .label { display: inline-block; min-width: 90px; color: #555; font-weight: bold; font-size: 0.9rem; }
+    .target { background: #fff3cd; padding: 10px 15px; border: 1px solid #ffeeba; border-radius: 4px; display: inline-block; min-width: 150px; min-height: 20px; font-family: monospace; }
+    .status-box { background: #e2e3e5; padding: 5px 10px; border-radius: 4px; font-family: monospace; font-size: 0.9rem; margin-left: 10px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    a { color: #007bff; text-decoration: underline; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Attr commands</h1>
+  <h1>Attribute Commands</h1>
 
-  <!-- ── addAttr ─────────────────────────────────────────── -->
+  <!-- ── 1. addAttr & removeAttr (Standard HTML) ─────────── -->
   <section>
-    <h2>addAttr · standard HTML attributes</h2>
-    <p class="desc">Set HTML attributes. Calling twice replaces the value.</p>
-    <div class="row"><span class="label">Target:</span> <span class="target" id="a1-target">link target</span></div>
-    <button click='["addAttr", "#a1-target", "title", "hover title"]'>title</button>
-    <button click='["addAttr", "#a1-target", "data-state", "active"]'>data-state active</button>
-    <button click='["addAttr", "#a1-target", "data-state", "inactive"]'>data-state inactive (replaces)</button>
-    <button click='["addAttr", "#a1-target", "data-count", 1]'>data-count = 1</button>
-    <button click='["removeAttr", "#a1-target", "title"]'>remove title</button>
-  </section>
-
-  <!-- ── addAttr as variable ─────────────────────────────── -->
-  <section>
-    <h2>addAttr · as variable</h2>
-    <p class="desc">Any non-HTML attribute works as a value store.</p>
-    <div class="row"><span class="label">Target:</span> <span class="target" id="a2-target">counter</span></div>
-    <button click='["addAttr", "#a2-target", "counter", 1]'>counter = 1</button>
-    <button click='["addAttr", "#a2-target", "counter", 10]'>counter = 10</button>
-    <button click='[
-      ["getAttr", "#a2-target", "counter", "n"],
-      ["addAttr", "#a2-target", "counter", "{ n * 1 + 1 }"]
-    ]'>counter += 1 (via getAttr)</button>
-  </section>
-
-  <!-- ── removeAttr ──────────────────────────────────────── -->
-  <section>
-    <h2>removeAttr</h2>
-    <div class="row"><span class="label">Target:</span> <span class="target" id="a3-target" title="has title" data-state="active">with attrs</span></div>
-    <button click='["removeAttr", "#a3-target", "title"]'>remove title</button>
-    <button click='["removeAttr", "#a3-target", "data-state"]'>remove data-state</button>
-    <button click='["addAttr", "#a3-target", "title", "has title"]'>add title back</button>
-    <button click='["addAttr", "#a3-target", "data-state", "active"]'>add data-state back</button>
-  </section>
-
-  <!-- ── getAttr · basics ────────────────────────────────── -->
-  <section>
-    <h2>getAttr · basics</h2>
-    <p class="desc">Read attribute and write to output.</p>
-    <div class="row"><span class="label">Source:</span> <span class="target" id="a4-src" title="the title value" data-count="42">source</span></div>
-    <div class="row"><span class="label">Result:</span> <span class="target" id="a4-out">(empty)</span></div>
-    <button click='["setText", "#a4-out", ["getAttr", "#a4-src", "title"]]'>title → out</button>
-    <button click='["setText", "#a4-out", ["getAttr", "#a4-src", "data-count"]]'>data-count → out</button>
-    <button click='["setText", "#a4-out", ["getAttr", "#a4-src", "title", "t", "{ t }"]]'>
-  inline expr
-</button>
-  </section>
-
-  <!-- ── getAttr · alias forms ───────────────────────────── -->
-  <section>
-    <h2>getAttr · alias forms</h2>
-    <div class="row"><span class="label">Source:</span> <span class="target" id="a5-src" title="Hello World" data-count="42">source</span></div>
-    <div class="row"><span class="label">Result:</span> <span class="target" id="a5-out">(empty)</span></div>
-    <button click='[
-      
-      ["setText", "#a5-out", ["getAttr", "#a5-src", "title", "t"]]
-    ]'>alias string</button>
-    <button click='[
-      ["getAttr", "#a5-src", ["title", "t"]],
-      ["setText", "#a5-out", "title = { t }"]
-    ]'>alias array</button>
-    <button click='["setText", "#a5-out", ["getAttr", "#a5-src", ["title", "t"], "{ upperCase(t) }"]]'>
-  alias array + expr
-</button>
-    <button click='[
-      ["getAttr", "#a5-src", "data-count", "n"],
-      ["setText", "#a5-out", "count + 1 = { n * 1 + 1 }"]
-    ]'>count + 1</button>
-  </section>
-
-  <!-- ── getAttr · multiple elements ─────────────────────── -->
-  <section>
-    <h2>getAttr · multiple elements</h2>
-    <div class="row"><span class="label">Source:</span>
-      <span class="target multi" data-v="10">a</span>
-      <span class="target multi" data-v="20">b</span>
-      <span class="target multi" data-v="30">c</span>
+    <h2>1. Standard HTML Attributes</h2>
+    <p class="desc">Setting and removing normal HTML attributes (like title, href).</p>
+    <div class="row">
+      <span class="label">Target:</span> 
+      <div class="target" id="attr-1">Hover me</div>
+      <a id="link-1">Click me</a>
     </div>
-    <div class="row"><span class="label">Result:</span> <span class="target" id="a6-out">(empty)</span></div>
-    <button click='["setText", "#a6-out", ["getAttr", "span.multi", "data-v"]]'>raw list</button>
-    <button click='[
-      ["getAttr", "span.multi", ["data-v", "vals"]],
-      ["setText", "#a6-out", "count = { count(vals) }"]
-    ]'>count</button>
-    <button click='[
-      ["getAttr", "span.multi", ["data-v", "vals"]],
-      ["setText", "#a6-out", "sum = { sum(vals) }"]
-    ]'>sum</button>
-    <button click='[
-      ["getAttr", "span.multi", ["data-v", "vals"]],
-      ["setText", "#a6-out", "min={ min(vals) } max={ max(vals) }"]
-    ]'>min / max</button>
+    <div class="row">
+      <button click='["addAttr", "#attr-1", "title", "This is a tooltip"]'>Add Title</button>
+      <button click='["addAttr", "#link-1", "href", "https://example.com"]'>Set Link Href</button>
+      <button click='["addAttr", "#attr-1", "data-custom", "my-value"]'>Add Data Attribute</button>
+      <button class="danger" click='["removeAttr", "#attr-1", "title"]'>Remove Title</button>
+    </div>
   </section>
 
-  <!-- ── Errors ──────────────────────────────────────────── -->
+  <!-- ── 2. Security (Blocking Unsafe Attributes) ────────── -->
+  <section style="border-color: #dc3545; background: #fff5f5;">
+    <h2 style="color: #dc3545;">2. Security Tests</h2>
+    <p class="desc">These attempts should be blocked by <code>attrGuard</code> to prevent XSS.</p>
+    <div class="row"><span class="label">Target:</span> <div class="target" id="sec-1">Safe Element</div></div>
+    <div class="row">
+      <button class="danger" click='["addAttr", "#sec-1", "onclick", "alert(1)"]'>Try Event Handler (onclick)</button>
+      <button class="danger" click='["addAttr", "#sec-1", "onmouseover", "alert(1)"]'>Try Event Handler (onmouseover)</button>
+      <button class="danger" click='["addAttr", "#sec-1", "href", "javascript:alert(1)"]'>Try JavaScript URI</button>
+      <button class="danger" click='["addAttr", "#sec-1", "srcdoc", "<script>alert(1)</script>"]'>Try srcdoc</button>
+    </div>
+  </section>
+
+  <!-- ── 3. getAttr (Basic) ──────────────────────────────── -->
   <section>
-    <h2>Errors (expected)</h2>
-    <div class="row"><span class="label">Target:</span> <span class="target" id="a7-target">still works</span></div>
-    <button click='["addAttr"]'>only command name</button>
-    <button click='["addAttr", "#a7-target"]'>missing key</button>
-    <button click='["addAttr", "#a7-target", "data-x"]'>missing value (treated as empty)</button>
-    <button click='["addAtter", "#a7-target", "x", "y"]'>typo command name</button>
-    <button click='["getAttr", "#a7-target", "missing-attr"]'>missing attr (returns undefined)</button>
+    <h2>3. getAttr (Basic)</h2>
+    <p class="desc">Reading attributes and passing them to variables.</p>
+    <div class="row">
+      <span class="label">Source:</span> 
+      <div class="target" id="gattr-src" data-id="123" title="Hello">Source</div>
+    </div>
+    <div class="row"><span class="label">Result:</span> <div class="target" id="gattr-out">(empty)</div></div>
+    <div class="row">
+      <button click='[
+        ["getAttr", "#gattr-src", "data-id", "myid"],
+        ["setText", "#gattr-out", "Data ID: { myid }"]
+      ]'>Get Data-ID</button>
+      
+      <button click='[
+        ["getAttr", "#gattr-src", "title", "t"],
+        ["setText", "#gattr-out", "Title: { t }"]
+      ]'>Get Title</button>
+    </div>
+  </section>
+
+  <!-- ── 4. Attributes as Variables (Counter) ────────────── -->
+  <section>
+    <h2>4. Using Attributes as Variables</h2>
+    <p class="desc">Using a custom attribute (like <code>counter</code>) to store state.</p>
+    <div class="row">
+      <span class="label">Target:</span> 
+      <div class="target" id="var-src" counter="0">Counter Target</div>
+      <span class="status-box" id="var-status">counter: 0</span>
+    </div>
+    <div class="row">
+      <!-- Reading as string, must multiply by 1 to do math -->
+      <button click='[
+        ["getAttr", "#var-src", "counter", "c"],
+        ["addAttr", "#var-src", "counter", "{ c * 1 + 1 }"],
+        ["setText", "#var-status", "counter: { c * 1 + 1 }"]
+      ]'>Increase (Math)</button>
+      
+      <!-- Reading as string, using += will concatenate -->
+      <button class="danger" click='[
+        ["getAttr", "#var-src", "counter", "c"],
+        ["addAttr", "#var-src", "counter", "{ c += 1 }"],
+        ["setText", "#var-status", "counter: { c }"]
+      ]'>Increase (String Concat)</button>
+    </div>
+  </section>
+
+  <!-- ── 5. Reading Multiple Attributes ──────────────────── -->
+  <section>
+    <h2>5. getAttr (Multiple Elements)</h2>
+    <p class="desc">When multiple elements match, it returns an array.</p>
+    <div class="row">
+      <span class="label">Sources:</span>
+      <div class="target multi-attr" data-score="10">A</div>
+      <div class="target multi-attr" data-score="20">B</div>
+      <div class="target multi-attr" data-score="30">C</div>
+    </div>
+    <div class="row"><span class="label">Result:</span> <div class="target" id="multi-out">(empty)</div></div>
+    <div class="row">
+      <button click='[
+        ["getAttr", ".multi-attr", "data-score", "scores"],
+        ["setText", "#multi-out", "Count: { count(scores) }, Sum: { sum(scores) }"]
+      ]'>Get Array & Sum</button>
+    </div>
+  </section>
+
+  <!-- ── 6. Errors ───────────────────────────────────────── -->
+  <section>
+    <h2>6. Errors (Expected in Console)</h2>
+    <div class="row"><span class="label">Target:</span> <div class="target" id="err-1">Error Target</div></div>
+    <div class="row">
+      <button class="danger" click='["addAttr", "#err-1", "invalid name!", "value"]'>Invalid Attribute Name</button>
+      <button class="danger" click='["getAttr", "#non-existent", "title", "t"]'>GetAttr on Missing Element</button>
+      <button class="danger" click='[
+        ["getAttr", "#err-1", "non-existent-attr", "v"],
+        ["setText", "#err-1", "Value: { v }"]
+      ]'>Get Non-Existent Attribute</button>
+    </div>
   </section>
 
   <script type="module" src="./setup.js"></script>

@@ -4,329 +4,222 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickEvent · Test Dashboard</title>
+  
   <style>
     :root {
-      --bg-sidebar: #0f172a;
-      --bg-main: #f8fafc;
-      --sidebar-text: #94a3b8;
-      --sidebar-text-hover: #f8fafc;
-      --sidebar-active: #38bdf8;
-      --sidebar-active-bg: rgba(56, 189, 248, 0.1);
-      --border: #1e293b;
-      --header-bg: #ffffff;
-      --accent: #38bdf8;
+      --bg-dark: #121212;
+      --bg-panel: #1e1e1e;
+      --bg-hover: #2d2d2d;
+      --text-main: #e0e0e0;
+      --text-muted: #888;
+      --border-color: #333;
+      --accent: #0ea5e9;
+      --error: #ef4444;
+      --warn: #f59e0b;
+      --success: #10b981;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
       display: flex;
       height: 100vh;
       overflow: hidden;
-      background-color: var(--bg-main);
     }
 
-    /* ── Sidebar ────────────────────────────────────────── */
-    .sidebar {
-      width: 280px;
-      background-color: var(--bg-sidebar);
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      transition: transform 0.3s ease;
-    }
+    /* ── Layout ── */
+    .sidebar { width: 260px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+    .main-content { flex: 1; background: var(--bg-dark); display: flex; flex-direction: column; position: relative; }
+    .console-panel { width: 400px; background: var(--bg-panel); border-left: 1px solid var(--border-color); display: flex; flex-direction: column; }
 
-    .sidebar-header {
-      padding: 20px;
-      border-bottom: 1px solid var(--border);
-    }
+    /* ── Sidebar (Left) ── */
+    .sidebar-header { padding: 20px; border-bottom: 1px solid var(--border-color); font-weight: bold; font-size: 1.2rem; color: var(--accent); }
+    .nav-list { list-style: none; overflow-y: auto; flex: 1; padding: 10px; }
+    .nav-item { padding: 10px 15px; border-radius: 6px; cursor: pointer; margin-bottom: 4px; color: var(--text-muted); transition: all 0.2s; display: block; text-decoration: none; font-size: 0.95rem; }
+    .nav-item:hover { background: var(--bg-hover); color: var(--text-main); }
+    .nav-item.active { background: var(--accent); color: #fff; }
 
-    .sidebar-header h1 {
-      color: #fff;
-      font-size: 1.2rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    /* ── Main Content (Center) ── */
+    .main-header { padding: 15px 25px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .iframe-container { flex: 1; position: relative; background: #fff; border-radius: 8px; margin: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    iframe { width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0; }
 
-    .sidebar-header h1 span {
-      background: linear-gradient(90deg, #38bdf8, #818cf8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    /* ── Console (Right) ── */
+    .console-header { padding: 15px 20px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+    .console-logs { flex: 1; overflow-y: auto; padding: 10px; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem; }
+    
+    .log-entry { padding: 10px; border-radius: 4px; margin-bottom: 8px; border-left: 4px solid; word-break: break-all; background: rgba(255,255,255,0.02); }
+    .log-info { border-left-color: var(--accent); color: #a5d8ff; }
+    .log-error { border-left-color: var(--error); color: #ffc9c9; background: rgba(239, 68, 68, 0.1); }
+    .log-warn { border-left-color: var(--warn); color: #ffec99; background: rgba(245, 158, 11, 0.1); }
+    
+    .log-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block; }
+    
+    .clear-btn { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .clear-btn:hover { background: var(--bg-hover); color: var(--text-main); }
 
-    .sidebar-scroll {
-      flex: 1;
-      overflow-y: auto;
-      padding: 15px 10px;
-    }
-
-    /* Custom Scrollbar for sidebar */
-    .sidebar-scroll::-webkit-scrollbar { width: 6px; }
-    .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-    .sidebar-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
-
-    .nav-group {
-      margin-bottom: 20px;
-    }
-
-    .nav-title {
-      color: #475569;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      padding: 0 10px;
-      margin-bottom: 8px;
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px;
-      color: var(--sidebar-text);
-      text-decoration: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-    }
-
-    .nav-link:hover {
-      background-color: var(--border);
-      color: var(--sidebar-text-hover);
-    }
-
-    .nav-link.active {
-      background-color: var(--sidebar-active-bg);
-      color: var(--sidebar-active);
-      font-weight: 600;
-    }
-
-    .nav-link .icon {
-      font-size: 1.1rem;
-      width: 24px;
-      text-align: center;
-    }
-
-    /* ── Main Area ───────────────────────────────────────── */
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background-color: var(--bg-main);
-      min-width: 0; /* Prevents flexbox overflow */
-    }
-
-    .topbar {
-      height: 60px;
-      background-color: var(--header-bg);
-      border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      flex-shrink: 0;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .mobile-menu-btn {
-      display: none;
-      background: none;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      font-size: 1.2rem;
-    }
-
-    .current-test-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1e293b;
-    }
-
-    .btn-new-tab {
-      background-color: var(--bg-sidebar);
-      color: white;
-      text-decoration: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-
-    .btn-new-tab:hover { background-color: #1e293b; }
-
-    iframe {
-      flex: 1;
-      width: 100%;
-      height: 100%;
-      border: none;
-      background-color: #fff;
-    }
-
-    /* ── Responsive ──────────────────────────────────────── */
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100%;
-        z-index: 100;
-        transform: translateX(-100%);
-        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-      }
-
-      .mobile-menu-btn {
-        display: block;
-      }
-
-      .btn-new-tab span {
-        display: none; /* Hide text on mobile, keep icon */
-      }
-    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #666; }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h1><span>QuickEvent</span> Tests</h1>
+  <!-- ── Sidebar (Left) ── -->
+  <aside class="sidebar">
+    <div class="sidebar-header" style="display: flex;justify-content: center;align-items: center;">
+      <img src="./qe.png" alt="quick event" style="width: 100px;">
+      <span>tests</span>
     </div>
+    <ul class="nav-list" id="test-nav">
+      <li><a href="#" class="nav-item active" data-src="text.html">📝 Text Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="html.html">📄 HTML Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="value.html">🔢 Value Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="class.html">🎨 Class Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="style.html">💅 Style Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="attr.html">🏷️ Attr Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="props.html">🔘 Props Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="util.html">🛠️ Utility Commands</a></li>
+      <li><a href="#" class="nav-item" data-src="flow.html">🚦 Flow (If/For)</a></li>
+      <li><a href="#" class="nav-item" data-src="events.html">🖱️ Events</a></li>
+      <li><a href="#" class="nav-item" data-src="modal.html">🪟 Modal</a></li>
+      <li><a href="#" class="nav-item" data-src="dialog.html">💬 Dialog</a></li>
+      <li><a href="#" class="nav-item" data-src="ajax.html">🌐 AJAX</a></li>
+      <li><a href="#" class="nav-item" data-src="cookie.html">🍪 Cookie</a></li>
+      <li><a href="#" class="nav-item" data-src="tick.html">⏱️ Tick</a></li>
+      <li><a href="#" class="nav-item" data-src="animate.html">✨ Animate</a></li>
+      <li><a href="#" class="nav-item" data-src="func.html">⚙️ Func</a></li>
+      <li><a href="#" class="nav-item" data-src="security.html">🛡️ Security</a></li>
+    </ul>
+  </aside>
 
-    <div class="sidebar-scroll">
-      <div class="nav-group">
-        <div class="nav-title">Core & Basics</div>
-        <a href="events.html" class="nav-link" target="test-frame"><span class="icon">⚡</span> Events</a>
-        <a href="events-hover.html" class="nav-link" target="test-frame"><span class="icon">⚡</span> Event hover</a>
-        <a href="selector.html" class="nav-link" target="test-frame"><span class="icon">⚡</span> selector</a>
-        <a href="text.html" class="nav-link" target="test-frame"><span class="icon">📝</span> Text</a>
-        <a href="html.html" class="nav-link" target="test-frame"><span class="icon">🌐</span> HTML</a>
-        <a href="attr.html" class="nav-link" target="test-frame"><span class="icon">🏷️</span> Attributes</a>
-        <a href="props.html" class="nav-link" target="test-frame"><span class="icon">⚙️</span> Props</a>
-        <a href="value.html" class="nav-link" target="test-frame"><span class="icon">🔢</span> Value</a>
-        <a href="getElement.html" class="nav-link" target="test-frame"><span class="icon">📝</span> getElement</a>
-      </div>
+  <!-- ── Main Content (Center) ── -->
+  <main class="main-content">
+    <header class="main-header">
+      <span id="current-test-name">📝 Text Commands</span>
+      <button class="clear-btn" onclick="document.getElementById('test-frame').contentWindow.location.reload()">🔄 Reload Frame</button>
+    </header>
+    <div class="iframe-container">
+      <iframe id="test-frame" src="text.html"></iframe>
+    </div>
+  </main>
 
-      <div class="nav-group">
-        <div class="nav-title">Styling</div>
-        <a href="class.html" class="nav-link" target="test-frame"><span class="icon">🎨</span> Class</a>
-        <a href="style.html" class="nav-link" target="test-frame"><span class="icon">💅</span> Style</a>
-        <a href="animate.html" class="nav-link" target="test-frame"><span class="icon">✨</span> Animate</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-title">Logic & Network</div>
-        <a href="flow.html" class="nav-link" target="test-frame"><span class="icon">🔀</span> Flow</a>
-        <a href="func.html" class="nav-link" target="test-frame"><span class="icon">🧩</span> Functions</a>
-        <a href="ajax.html" class="nav-link" target="test-frame"><span class="icon">🌍</span> AJAX & API</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-title">UI Components</div>
-        <a href="modal.html" class="nav-link" target="test-frame"><span class="icon">🪟</span> Modal</a>
-        <a href="dialog.html" class="nav-link" target="test-frame"><span class="icon">💬</span> Dialog</a>
-        <a href="dialog-chain.html" class="nav-link" target="test-frame"><span class="icon">🔗</span> Dialog Chain</a>
-        <a href="submitForm.html" class="nav-link" target="test-frame"><span class="icon">📋</span> Form Submit</a>
-        <a href="tick.html" class="nav-link" target="test-frame"><span class="icon">⏱️</span> Tick (Timer)</a>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-title">System & Security</div>
-        <a href="util.html" class="nav-link" target="test-frame"><span class="icon">🛠️</span> Utilities</a>
-        <a href="window.html" class="nav-link" target="test-frame"><span class="icon">🌍</span> window</a>
-        <a href="cookie.html" class="nav-link" target="test-frame"><span class="icon">🍪</span> Cookies</a>
-        <a href="security.html" class="nav-link" target="test-frame"><span class="icon">🛡️</span> Security</a>
-        <a href="xss-hardcore.html" class="nav-link" target="test-frame"><span class="icon">☣️</span> XSS Hardcore</a>
-        <a href="scoping.html" class="nav-link" target="test-frame"><span class="icon"></span>scoping </a>
-      </div>
+  <!-- ── Console (Right) ── -->
+  <aside class="console-panel">
+    <div class="console-header">
+      Console
+      <button class="clear-btn" id="clear-console">Clear</button>
+    </div>
+    <div class="console-logs" id="console-output">
+      <!-- Logs will be appended here -->
     </div>
   </aside>
 
-  <!-- Main Content Area -->
-  <main class="main-content">
-    <header class="topbar">
-      <div style="display: flex; align-items: center; gap: 15px;">
-        <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
-        <div class="current-test-title" id="current-title">Select a test from the sidebar</div>
-      </div>
-      
-      <a href="#" id="new-tab-link" class="btn-new-tab" target="_blank" style="display: none;">
-        Open in New Tab ↗
-      </a>
-    </header>
 
-    <!-- Iframe to load tests -->
-    <iframe name="test-frame" id="test-frame" src="about:blank"></iframe>
-  </main>
-
-  <script>
-    const navLinks = document.querySelectorAll('.nav-link');
+   <script type="module">
     const iframe = document.getElementById('test-frame');
-    const currentTitle = document.getElementById('current-title');
-    const newTabLink = document.getElementById('new-tab-link');
-    const sidebar = document.getElementById('sidebar');
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const navItems = document.querySelectorAll('.nav-item');
+    const currentTestName = document.getElementById('current-test-name');
+    const consoleOutput = document.getElementById('console-output');
 
-    // Handle sidebar link clicks
-    navLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
+    // ── Navigation Logic ──
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
         e.preventDefault();
+        navItems.forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
         
-        // Remove active class from all
-        navLinks.forEach(l => l.classList.remove('active'));
-        
-        // Add active class to clicked
-        link.classList.add('active');
-
-        // Update Iframe
-        const url = link.getAttribute('href');
-        iframe.src = url;
-
-        // Update Title
-        currentTitle.textContent = link.textContent.trim();
-
-        // Update New Tab Link
-        newTabLink.href = url;
-        newTabLink.style.display = 'flex';
-
-        // Close sidebar on mobile after selection
-        if (window.innerWidth <= 768) {
-          sidebar.classList.remove('open');
-        }
+        const src = item.getAttribute('data-src');
+        iframe.src = src;
+        currentTestName.textContent = item.textContent.trim();
+        consoleOutput.innerHTML = '';
       });
     });
 
-    // Mobile menu toggle
-    mobileMenuBtn.addEventListener('click', () => {
-      sidebar.classList.toggle('open');
+    // ── Panel Logger ──
+    function addLogToPanel(type, args) {
+      const el = document.createElement('div');
+      el.className = `log-entry log-${type}`;
+      
+      const message = args.map(arg => {
+        if (typeof arg === 'object') {
+          try { return JSON.stringify(arg, null, 2); } catch (e) { return String(arg); }
+        }
+        return String(arg);
+      }).join(' ');
+
+      const time = new Date().toLocaleTimeString();
+
+      el.innerHTML = `
+        <div class="log-message">${message}</div>
+        <span class="log-meta">${type.toUpperCase()} · ${time}</span>
+      `;
+      
+      consoleOutput.appendChild(el);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+
+    // ── Iframe Injection & Console Override ──
+    iframe.addEventListener('load', () => {
+      consoleOutput.innerHTML = '';
+      const frameWindow = iframe.contentWindow;
+      if (!frameWindow) return;
+
+      // Reset QE errors tracker
+      frameWindow.__QE_ERRORS__ = [];
+      frameWindow.__processedErrors = new Set();
+
+      // Override iframe's console methods
+      const originalLog = frameWindow.console.log;
+      const originalWarn = frameWindow.console.warn;
+      const originalError = frameWindow.console.error;
+
+      frameWindow.console.log = (...args) => {
+        originalLog.apply(frameWindow.console, args);
+        addLogToPanel('info', args);
+      };
+      
+      frameWindow.console.warn = (...args) => {
+        originalWarn.apply(frameWindow.console, args);
+        addLogToPanel('warn', args);
+      };
+      
+      frameWindow.console.error = (...args) => {
+        originalError.apply(frameWindow.console, args);
+        addLogToPanel('error', args);
+      };
     });
 
-    // Auto-load the first test (Events) on startup
-    window.addEventListener('DOMContentLoaded', () => {
-      if (navLinks.length > 0) {
-        navLinks[0].click();
+    // ── Intercept QuickEvent Errors (from window.__QE_ERRORS__) ──
+    setInterval(() => {
+      const frameWindow = iframe.contentWindow;
+      if (frameWindow && frameWindow.__QE_ERRORS__ && frameWindow.__QE_ERRORS__.length > 0) {
+        if (!frameWindow.__processedErrors) frameWindow.__processedErrors = new Set();
+        
+        frameWindow.__QE_ERRORS__.forEach(err => {
+          if (!frameWindow.__processedErrors.has(err.timestamp)) {
+            frameWindow.__processedErrors.add(err.timestamp);
+            addLogToPanel('error', [`[QE ${err.code}] ${err.message}`]);
+          }
+        });
+      }
+    }, 500);
+
+    // Clear button
+    document.getElementById('clear-console').addEventListener('click', () => {
+      consoleOutput.innerHTML = '';
+      const frameWindow = iframe.contentWindow;
+      if (frameWindow) {
+        frameWindow.__QE_ERRORS__ = [];
+        frameWindow.__processedErrors = new Set();
       }
     });
   </script>
+
 </body>
 </html>
