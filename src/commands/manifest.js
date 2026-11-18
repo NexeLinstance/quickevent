@@ -17,6 +17,8 @@ import tick from './tick/index.js';
 import func from './func/index.js';
 import collapse from './collapse/index.js';
 import getElement from './dom/getElement.js';
+import setJson from './json/setJson.js';
+import getJson from './json/getJson.js';
 
 const commands = [
   ...text,
@@ -37,6 +39,8 @@ const commands = [
   ...func,
   ...collapse,
   getElement,
+    setJson,
+  getJson,
 ];
 
 export default commands;

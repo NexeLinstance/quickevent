@@ -33,24 +33,16 @@ Each command in QuickEvent is a **list (array)** where index zero is the command
 ## Quick Start
 #### HTML
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js" defer></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css">
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent-markers.css">
 ```
 #### Nexelpy (Python)
 ```python
-x.script(parent=x.HEAD_tag, src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js", type="module", props="defer")
-x.link(parent=x.HEAD_tag, rel="stylesheet", href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css")
+x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js")
+x.link(parent=x.HEAD_tag, rel="stylesheet", href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent-markers.css")
 ```
 
-```html
-<!-- For the latest released version (even alpha) -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent-markers.css">
 
-<!-- For the stable and tested version (recommended) -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css">
-```
 ## Events
 
 QuickEvent supports the following events:
@@ -524,6 +516,83 @@ click=["addProps", "this", "hidden"]
 click=["addProps", "#terms-checkbox", "checked disabled"]
 click=["removeProps", "#submit-btn", "disabled hidden"]
 ```
+
+
+
+
+## 📦 JSON Commands (Structured Data Management)
+
+In complex projects (like building trees, nested lists, or saving state), you need to attach structured data (objects or dictionaries) to an element. Writing JSON as strings in HTML makes the code dirty, conflicts with QuickEvent's curly braces, and causes parsing errors. The `setJson` and `getJson` commands are designed to solve this problem.
+
+### 📝 Saving Data (setJson)
+
+```python
+["setJson", "selector", "name", {"key": "value"}]
+```
+
+➕ **Index 0:** Command name (`setJson`)
+➕ **Index 1:** Selector of the element where you want to save the data.
+➕ **Index 2:** Key name (Name). The data is stored in an attribute named `data-json-{name}`.
+➕ **Index 3:** The object or dictionary containing the data. All values inside this object (even variables like `{tag}`) are evaluated and replaced before being saved.
+
+🧾 **Example:**
+```python
+click=[
+  ["setJson", "#my-div", "user-info", {
+    "id": 123,
+    "name": "{ user_input }",
+    "roles": ["admin", "editor"]
+  }]
+]
+```
+*(In this example, the data is stored as a clean JSON string in the `data-json-user-info` attribute.)*
+
+### 📝 Reading Data (getJson)
+
+```python
+["getJson", "selector", "name"]
+["getJson", "selector", "name", "alias"]
+```
+
+➕ **Index 0:** Command name (`getJson`)
+➕ **Index 1:** Selector of the element where the data is stored.
+➕ **Index 2:** Key name (Name) used during `setJson`.
+➕ **Index 3:** (Optional) Name of the variable (alias) in which the read object is stored.
+
+🧾 **Example:**
+```python
+click=[
+  ["getJson", "#my-div", "user-info", "user"],
+  ["setText", "#output", "User: { user.name }"]
+]
+```
+
+---
+
+### 💡 Why Use These Commands? (Comparison)
+
+Suppose you want to render a list of information in HTML and simultaneously save the data of each item for future clicks.
+
+**Old Way (Ugly & Error-Prone):**
+```python
+# Writing JSON manually inside HTML
+["appendHtmlTrust", "#list", "<li data-info='{\"id\":\"{id}\", \"tag\":\"{tag}\"}'>...</li>"]
+```
+
+**New Way (Clean & Standard):**
+```python
+# 1. Save data in a variable
+["setJson", "#list", "info", {"id": "{id}", "tag": "{tag}"}]
+
+# 2. Inject empty HTML without any data
+["appendHtmlTrust", "#list", "<li id=\"item-{id}\">...</li>"]
+```
+
+**Benefits of the New Way:**
+1. **No Escaping:** No need to escape quotes and curly braces.
+2. **Safe Parsing:** QuickEvent processes the object before saving, so the HTML parser won't break.
+3. **Easy Access:** Each element's data is stored cleanly in a `data-json-*` attribute and can be read with `getJson`.
+
 
 ## Utilities
 

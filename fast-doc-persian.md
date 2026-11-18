@@ -33,24 +33,17 @@ setText(selector, text)
 ## Quick start
 #### html
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js" defer></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css">
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent-markers.css">
 ```
-####  nexelpy (python)
+#### Nexelpy (Python)
 ```python
-x.script(parent=x.HEAD_tag,src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js",type="module",props="defer")
-x.link(parent=x.HEAD_tag, rel="stylesheet" ,href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css")
+x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js")
+x.link(parent=x.HEAD_tag, rel="stylesheet", href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent-markers.css")
 ```
 
-```html
-<!-- برای آخرین نسخه ریلیز شده (حتی آلفا) -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent-markers.css">
 
-<!-- برای نسخه پایدار و تست‌شده (توصیه‌شده) -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@stable/quickevent-markers.css">
-```
+
 ## ایونت‌ها
 
 کوییک ایونت از ایونت‌های زیر پشتیبانی می‌کند:
@@ -523,6 +516,82 @@ click=["removeProps", "#submit-btn", "disabled hidden"]
   ["getElement", "#my-btn", "BTN"],
   ["if", "{BTN.disabled}", ["log", "دکمه غیرفعال است"]]
 ```
+
+
+## 📦 کامندهای JSON (مدیریت داده‌های ساختاریافته)
+
+در پروژه‌های پیچیده (مثل ساخت درخت، لیست‌های تودرتو یا ذخیره وضعیت)، نیاز دارید داده‌های ساختاریافته (آبجکت یا دیکشنری) را به یک المان متصل کنید. نوشتن JSON به صورت رشته (String) در HTML باعث کثیف شدن کد، تداخل با آکولادهای QuickEvent و خطاهای پارس می‌شود. کامندهای `setJson` و `getJson` برای حل این مشکل طراحی شده‌اند.
+
+### 📝 ذخیره داده (setJson)
+
+```python
+["setJson", "selector", "name", {"key": "value"}]
+```
+
+➕ **ایندکس 0:** نام کامند (`setJson`)
+➕ **ایندکس 1:** سلکتور المانی که می‌خواهید داده روی آن ذخیره شود.
+➕ **ایندکس 2:** نام کلید (Name). داده در اتریبیوتی به نام `data-json-{name}` ذخیره می‌شود.
+➕ **ایندکس 3:** آبجکت یا دیکشنری حاوی داده‌ها. تمام مقادیر داخل این آبجکت (حتی مقادیر متغیرها مثل `{tag}`) قبل از ذخیره شدن ارزیابی و جایگذاری می‌شوند.
+
+🧾 **مثال:**
+```python
+click=[
+  ["setJson", "#my-div", "user-info", {
+    "id": 123,
+    "name": "{ user_input }",
+    "roles": ["admin", "editor"]
+  }]
+]
+```
+*(در این مثال، داده‌ها به صورت یک رشته JSON تمیز در اتریبیوت `data-json-user-info` قرار می‌گیرند.)*
+
+### 📝 خواندن داده (getJson)
+
+```python
+["getJson", "selector", "name"]
+["getJson", "selector", "name", "alias"]
+```
+
+➕ **ایندکس 0:** نام کامند (`getJson`)
+➕ **ایندکس 1:** سلکتور المانی که داده روی آن ذخیره شده است.
+➕ **ایندکس 2:** نام کلید (Name) که هنگام `setJson` استفاده کرده‌اید.
+➕ **ایندکس 3:** (اختیاری) نام متغیری (alias) که آبجکت خوانده‌شده در آن ذخیره می‌شود.
+
+🧾 **مثال:**
+```python
+click=[
+  ["getJson", "#my-div", "user-info", "user"],
+  ["setText", "#output", "User: { user.name }"]
+]
+```
+
+---
+
+### 💡 چرا از این کامندها استفاده کنیم؟ (مقایسه)
+
+فرض کنید می‌خواهید یک لیست از اطلاعات را در HTML رندر کنید و همزمان داده‌های هر آیتم را برای کلیک‌های بعدی ذخیره کنید.
+
+**روش قدیمی (زشت و مستعد خطا):**
+```python
+# نوشتن JSON به صورت دستی داخل HTML
+["appendHtmlTrust", "#list", "<li data-info='{\"id\":\"{id}\", \"tag\":\"{tag}\"}'>...</li>"]
+```
+
+**روش جدید (تمیز و استاندارد):**
+```python
+# ۱. داده‌ها را در متغیر ذخیره می‌کنیم
+["setJson", "#list", "info", {"id": "{id}", "tag": "{tag}"}]
+
+# ۲. HTML خالی را بدون هیچ داده‌ای تزریق می‌کنیم
+["appendHtmlTrust", "#list", "<li id=\"item-{id}\">...</li>"]
+```
+
+**مزایای روش جدید:**
+1. **بدون Escape:** نیازی به escape کردن کوتیشن‌ها و آکولادها نیست.
+2. **پارس امن:** QuickEvent آبجکت را قبل از ذخیره پردازش می‌کند، پس پارسر HTML به هم نمی‌ریزد.
+3. **دسترسی آسان:** داده‌های هر المان به راحتی در یک `data-json-*` تمیز ذخیره می‌شوند و با `getJson` خوانده می‌شوند.
+
+
 
 ---
 ## Utilities

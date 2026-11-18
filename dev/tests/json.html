@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QuickEvent · JSON Commands (Torture Test)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; line-height: 1.6; }
+    section { margin-bottom: 40px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; }
+    h2 { margin-top: 0; font-size: 1.2rem; color: #333; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 15px; }
+    p.desc { color: #666; font-size: 0.9rem; margin-bottom: 15px; }
+    button { margin: 4px 8px 4px 0; padding: 6px 12px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+    button:hover { background: #0056b3; }
+    button.danger { background: #dc3545; }
+    button.danger:hover { background: #c82333; }
+    
+    .row { margin: 10px 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .label { display: inline-block; min-width: 90px; color: #555; font-weight: bold; font-size: 0.9rem; }
+    .target { background: #fff3cd; padding: 10px; border: 1px solid #ffeeba; border-radius: 4px; display: block; min-height: 20px; font-family: monospace; margin-top: 5px; white-space: pre-wrap; }
+    .json-box { background: #e2e3e5; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 0.85rem; margin-top: 5px; overflow-x: auto; }
+    input { padding: 4px 8px; width: 150px; border: 1px solid #ccc; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>JSON Commands (setJson / getJson)</h1>
+
+  <!-- ── 1. Basic Save & Read ────────────────────────────── -->
+  <section>
+    <h2>1. Basic Save & Read</h2>
+    <p class="desc">Save a simple object, then read it back and display a property.</p>
+    <div class="row">
+      <span class="label">Target:</span> 
+      <div id="basic-target" style="display:none;"></div>
+      <button click='[
+        ["setJson", "#basic-target", "user", {"name": "Ali", "age": 30}]
+      ]'>Save Data</button>
+      <button click='["log", "Check console to see raw data"]'>Log Raw</button>
+    </div>
+    <div class="row">
+      <span class="label">Result:</span> 
+      <div class="target" id="basic-out">(empty)</div>
+    </div>
+    <div class="row">
+      <button click='[
+        ["getJson", "#basic-target", "user", "u"],
+        ["setText", "#basic-out", "Name: { u.name }, Age: { u.age }"]
+      ]'>Read Data</button>
+    </div>
+    <div class="row">
+      <button click='[
+        ["getElement", "#basic-target", "EL"],
+        ["setText", "#basic-out", "Raw Attribute: { EL.dataset.jsonUser }"]
+      ]'>Show Raw JSON Attribute</button>
+    </div>
+  </section>
+
+  <!-- ── 2. Nested Objects & Variables ───────────────────── -->
+  <section>
+    <h2>2. Nested Objects & Variables</h2>
+    <p class="desc">Save data with variables inside, and nest objects deeply.</p>
+    <div class="row">
+      <span class="label">Input:</span> <input id="dyn-name" type="text" value="Reza">
+      <span class="label">Target:</span> <div id="nested-target" style="display:none;"></div>
+    </div>
+    <div class="row">
+      <button click='[
+        ["getValue", "#dyn-name", "name"],
+        ["setJson", "#nested-target", "profile", {
+          "user": "{ name }",
+          "meta": {
+            "role": "admin",
+            "active": true
+          }
+        }]
+      ]'>Save Nested with Variable</button>
+    </div>
+    <div class="row">
+      <span class="label">Result:</span> 
+      <div class="target" id="nested-out">(empty)</div>
+    </div>
+    <div class="row">
+      <button click='[
+        ["getJson", "#nested-target", "profile", "p"],
+        ["setText", "#nested-out", "User: { p.user }, Role: { p.meta.role }, Active: { p.meta.active }"]
+      ]'>Read Nested Data</button>
+    </div>
+  </section>
+
+  <!-- ── 3. In a Loop (The Real Use Case) ────────────────── -->
+  <section>
+    <h2>3. In a Loop (Tree Building)</h2>
+    <p class="desc">Generate a list where each item holds its own JSON data. This replaces the ugly inline HTML JSON.</p>
+    <div class="row">
+      <span class="label">Target Container:</span> 
+      <ul id="tree-container" style="background:#fff; border:1px solid #ccc; padding:10px; min-height:50px;">
+        <!-- Items will be injected here -->
+      </ul>
+    </div>
+    <div class="row">
+      <button click='[
+        ["setText", "#tree-container", ""],
+        ["for", "i", [1, 2, 3], [
+          ["appendHtmlTrust", "#tree-container", "<li id=\"node-{i}\">Node {i} <button click=[\"read_node\",\"{i}\"]>Read</button></li>"],
+          ["setJson", "#node-{i}", "node-data", {
+            "id": "{i}",
+            "title": "Item {i}",
+            "isLeaf": false
+          }]
+        ]]
+      ]'>Generate Tree</button>
+    </div>
+  </section>
+
+  <!-- ── 4. Macro for Reading (The `read_node` function) ── -->
+  <section>
+    <h2>4. Reading Data in a Macro</h2>
+    <p class="desc">This macro is defined in the head of this page (hidden div) and called by the buttons above.</p>
+    
+    <!-- Define the macro -->
+    <div id="macros" read_node='[
+      "createFunc", 
+      ["nodeId"], 
+      [
+        ["getJson", "#node-{nodeId}", "node-data", "data"],
+        ["setText", "#loop-out", "Read Node: ID={ data.id }, Title={ data.title }"]
+      ]
+    ]' style="display:none;"></div>
+
+    <div class="row">
+      <span class="label">Result:</span> 
+      <div class="target" id="loop-out">(empty)</div>
+    </div>
+    <p class="desc">Click on the "Read" buttons inside the generated tree above.</p>
+  </section>
+
+  <!-- ── 5. Errors ───────────────────────────────────────── -->
+  <section>
+    <h2>5. Errors (Expected in Console)</h2>
+    <div class="row">
+      <span class="label">Target:</span> 
+      <div id="err-target" data-json-broken='{invalid-json}' style="display:none;"></div>
+      <div class="target" id="err-out">(empty)</div>
+    </div>
+    <div class="row">
+      <button class="danger" click='[
+        ["getJson", "#err-target", "broken", "v"]
+      ]'>Read Invalid JSON (Throws Error)</button>
+      
+      <button class="danger" click='[
+        ["getJson", "#non-existent", "data", "v"]
+      ]'>Read from Missing Element (Returns undefined)</button>
+      
+      <button class="danger" click='[
+        ["getJson", "#err-target", "missing-key", "v"]
+      ]'>Read Missing Key (Returns undefined)</button>
+    </div>
+  </section>
+
+  <script type="module" src="./setup.js"></script>
+</body>
+</html>

@@ -43,7 +43,9 @@
 
 ```html
 <!-- بارگذاری فریم‌ورک -->
-<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js"></script>
+<!-- Load the framework -->
+<script type="module" src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent-markers.css">
 
 <button click='["setText", "#message", "سلام دنیا! 🎉"]'>
   کلیک کنید
@@ -61,9 +63,8 @@ from nexelpy import AutoRegister, View
 async def home():
     x = View(__file__, title="QuickEvent Demo")
     
-    # بارگذاری QuickEvent در هد
-    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@latest/quickevent.min.js")
-    
+    # Load QuickEvent in the head
+    x.script(parent=x.headTag, type="module", props="defer", src="https://cdn.jsdelivr.net/gh/NexeLinstance/quickevent@main/dist/quickevent.min.js")
     # استفاده از کامندها مستقیماً در کامپوننت‌های پایتون
     x.button("ثبت نام", click=["setText", "#status", "با موفقیت ثبت شد! ✅"])
     x.p(id="status", text="وضعیت: نامشخص")
